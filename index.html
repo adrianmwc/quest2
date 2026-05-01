@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Amazing Race</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="jspdf.umd.min.js"></script>
+</head>
+<body>
+
+    <div id="welcome-screen" class="screen active">
+        <h1 onclick="handleAdminTap()">🏆 AMAZING RACE</h1>
+        
+        <div class="registration-form">
+            <input type="text" id="team-name-input" placeholder="TEAM NAME" maxlength="15">
+            
+            <div class="member-selection">
+                <span>NUMBER OF RACERS:</span>
+                <select id="member-count" onchange="generateMemberInputs()">
+                    <option value="0">-</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div id="member-inputs-container"></div>
+        </div>
+
+        <div id="pre-race-checklist">
+            <div id="db-indicator" class="status-pill">PHOTOS: OFFLINE</div>
+            <div id="storage-indicator" class="status-pill">LOGS: OFFLINE</div>
+            <div id="offline-indicator" class="status-pill">LINK: CHECKING</div>
+            <div id="asset-status-bar" class="status-pill">CACHING ASSETS...</div>
+            <p id="check-msg">SYSTEM INITIALIZING...</p>
+        </div>
+
+        <button id="start-race-btn" onclick="startRace()" class="btn-main">START RACE</button>
+        <div id="preloader" style="display:none;"></div>
+    </div>
+
+    <div id="hub-screen" class="screen">
+        <div class="team-profile-header">
+            <div class="profile-main">
+                <h2 id="display-team-name">TEAM</h2>
+                <div id="hub-timer" class="timer-mini">00:00</div>
+            </div>
+            <div id="display-team-members" class="member-pills"></div>
+        </div>
+
+        <div class="progress-container">
+            <div id="progress-bar">0%</div>
+        </div>
+        
+        <div id="hub-score">Score: 0</div>
+        <div id="task-list"></div>
+        
+        <button id="finish-btn" class="btn-finish-pulse" onclick="showPitStop()">🏁 REACH THE PIT STOP</button>
+    </div>
+
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">Task</h2>
+            <p id="modal-desc"></p>
+            <img id="modal-image" src="" onclick="zoomImage()">
+            
+            <div id="input-section">
+                <input type="text" id="passcode-input" placeholder="ENTER CODE" autocorrect="off">
+                
+                <button type="button" class="photo-upload-btn" onclick="document.getElementById('cameraInput').click()">
+                    📷 TAKE PHOTO EVIDENCE
+                </button>
+                
+                <input type="file" id="cameraInput" accept="image/*" capture="camera" onchange="previewPhoto(event)" style="display: none;">
+
+                <div id="photo-preview-container" style="display:none;">
+                    <img id="task-photo-preview">
+                </div>
+                
+                <button class="btn-main" style="margin-top:20px;" onclick="submitPasscode()">SUBMIT MISSION</button>
+                <button class="btn-hint" onclick="revealHint()">USE HINT (-25 PTS)</button>
+            </div>
+
+            <div id="lockout-section" style="display:none;">
+                <h3 style="color:var(--error-red);">⚠️ SYSTEM LOCKED</h3>
+                <p>Too many failed attempts. Try again in:</p>
+                <div id="timer-display" class="timer">0s</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pit-stop-screen" class="screen">
+        <div class="finish-header">
+            <h1 style="color:var(--gold);">PIT STOP REACHED</h1>
+        </div>
+        
+        <div class="results-summary-card">
+            <h2 id="final-team-name">TEAM NAME</h2>
+            <div id="final-member-list" class="member-pills-static"></div>
+            
+            <div class="final-stats-container" style="display: flex; justify-content: space-around; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin: 15px 0;">
+                <div class="stat-box" style="text-align:center;">
+                    <span style="font-size: 0.7rem; color: var(--gold); font-weight: bold;">TOTAL POINTS</span>
+                    <div id="final-total-points" style="font-size: 2.2rem; font-weight: bold;">0</div>
+                </div>
+                <div class="stat-box" style="text-align:center;">
+                    <span style="font-size: 0.7rem; color: var(--gold); font-weight: bold;">FINAL TIME</span>
+                    <div id="final-time-results" style="font-size: 2.2rem; font-weight: bold;">00:00</div>
+                </div>
+            </div>
+
+            <div class="penalty-breakdown" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <h3 style="font-size:0.85rem; color:#888; border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:10px; text-align: center;">PENALTY AUDIT</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size: 0.9rem;">
+                    <span>Hint Deductions:</span>
+                    <span id="penalty-hints" style="color:#ff4d4d; font-weight:bold;">-0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size: 0.9rem;">
+                    <span>Lockout/Error Penalties:</span>
+                    <span id="penalty-lockouts" style="color:#ff4d4d; font-weight:bold;">-0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="station-breakdown" class="results-list"></div>
+
+        <div style="padding: 20px;">
+            <button class="btn-main" style="background:#3498db; width: 100%;" onclick="downloadPDF()">📥 DOWNLOAD OFFICIAL PDF</button>
+            <button class="btn-report" style="width: 100%; margin-top: 10px;" onclick="adminResetTrigger()">RESET SYSTEM</button>
+        </div>
+
+        <div id="final-time-display" style="display:none;">00:00</div>
+    </div>
+
+    <div id="image-overlay" class="overlay" onclick="closeZoom()">
+        <img id="overlay-img">
+    </div>
+
+    <script src="config.js"></script>
+    <script src="tasks.js"></script>
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>

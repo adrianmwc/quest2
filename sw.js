@@ -1,0 +1,27 @@
+const CACHE_NAME = 'race-v20';
+const ASSETS = [
+  './',
+  './index.html',
+  './style.css',
+  './script.js',
+  './tasks.js',
+  './config.js',
+  './manifest.json',
+  './jspdf.umd.min.js',
+  './images/icon-192.png'
+];
+
+self.addEventListener('install', e => {
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => {
+    if(k !== CACHE_NAME) return caches.delete(k);
+  }))));
+});
+
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+});

@@ -1,0 +1,328 @@
+:root {
+    --gold: #ffde00;
+    --success-green: #2ecc71;
+    --error-red: #e74c3c;
+    --dark-bg: #121212;
+    --card-bg: #1e1e1e;
+}
+
+/* 1. GLOBAL RESET & IPAD OPTIMIZATION */
+body {
+    background: var(--dark-bg);
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent; /* Removes grey flicker on tap */
+}
+
+.screen { 
+    display: none; 
+    width: 100%; 
+    max-width: 600px; 
+    flex-direction: column; 
+    align-items: center; 
+}
+.screen.active { display: flex; }
+
+/* 2. REGISTRATION & INPUTS */
+.registration-form { width: 100%; margin-bottom: 20px; }
+
+input[type="text"], select {
+    width: 100%;
+    padding: 15px;
+    margin: 8px 0;
+    background: #222;
+    border: 1px solid #444;
+    color: white;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.member-selection { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    color: var(--gold); 
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+}
+
+.member-selection select { width: 80px; margin: 0; }
+
+/* 3. HUB HEADER & PROGRESS */
+.team-profile-header {
+    width: 100%;
+    background: var(--card-bg);
+    border-left: 4px solid var(--gold);
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+.profile-main { display: flex; justify-content: space-between; align-items: center; }
+
+.timer-mini { 
+    font-family: monospace; 
+    background: #000; 
+    padding: 5px 10px; 
+    color: var(--error-red); 
+    border-radius: 4px; 
+    font-size: 1.1rem;
+}
+
+.member-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.member-pill { 
+    background: #333; 
+    padding: 4px 10px; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    border: 1px solid #444; 
+}
+
+.member-pill span { color: var(--gold); margin-left: 4px; font-weight: bold; }
+
+.progress-container {
+    width: 100%;
+    background: #333;
+    border-radius: 10px;
+    height: 20px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+#progress-bar {
+    height: 100%;
+    background: var(--success-green);
+    width: 0%;
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 20px;
+    font-weight: bold;
+    transition: width 0.5s ease;
+}
+
+/* 4. TASK CARDS (HUB LIST) */
+#task-list { width: 100%; }
+
+.task-card {
+    width: 100%;
+    background: #222;
+    border: 1px solid #333;
+    padding: 12px 18px; /* Slimmer padding */
+    margin-bottom: 8px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    text-align: left;
+    min-height: 60px;
+    box-sizing: border-box;
+}
+
+.task-card.completed {
+    background: #1e3a2a; /* Deep green */
+    border: 2px solid var(--success-green);
+    pointer-events: none;
+}
+
+/* 5. MODAL SYSTEM (RESIZED FOR IPAD) */
+.modal { 
+    display: none; 
+    position: fixed; 
+    z-index: 100; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.9); 
+}
+
+.modal-content { 
+    position: relative;
+    background: #1a1a1a; 
+    margin: 20px auto; 
+    padding: 50px 20px 20px 20px; /* Space at top for the X */
+    width: 90%; 
+    max-width: 450px; 
+    border-radius: 15px; 
+    max-height: 90vh; 
+    overflow-y: auto; 
+    box-sizing: border-box;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 15px; /* Top-Right Position */
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 101;
+    border: 1px solid rgba(255, 222, 0, 0.3);
+}
+
+.close:active {
+    background: var(--gold);
+    color: black;
+    transform: scale(0.9);
+}
+
+#modal-title { 
+    font-size: 1.3rem; 
+    margin: 0;
+    padding-right: 45px; /* Adds a "buffer" so text won't go under the X */
+    color: var(--gold); 
+}
+
+#modal-desc { font-size: 0.95rem; line-height: 1.4; color: #ccc; margin-bottom: 10px; }
+
+/* Image scaling to prevent vertical overflow */
+#modal-image { 
+    width: 100%; 
+    max-height: 200px; /* Limits size so buttons stay on screen */
+    object-fit: cover; 
+    border-radius: 8px; 
+    margin: 10px 0; 
+}
+
+/* 6. PHOTO & BUTTONS */
+/* Update the photo button to show it's active once a photo is picked */
+.photo-upload-btn.has-photo {
+    border-color: var(--success-green) !important;
+    color: var(--success-green) !important;
+    background: rgba(46, 204, 113, 0.1);
+}
+
+button.photo-upload-btn {
+    display: block;
+    width: 100%;
+    background: #333;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    border: 2px dashed #555;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 10px 0;
+    font-size: 1rem;
+    font-weight: bold;
+    -webkit-appearance: none; /* Fixes iPad button styling */
+}
+
+button.photo-upload-btn.has-photo {
+    border-color: var(--success-green) !important;
+    color: var(--success-green) !important;
+    background: rgba(46, 204, 113, 0.1);
+}
+
+#task-photo-preview { 
+    width: 100%; 
+    max-height: 150px; 
+    object-fit: contain; 
+    border-radius: 8px; 
+    margin-top: 10px; 
+}
+
+.btn-main { 
+    background: var(--gold); 
+    color: black; 
+    border: none; 
+    padding: 15px; 
+    font-weight: bold; 
+    border-radius: 8px; 
+    width: 100%; 
+    font-size: 1rem;
+}
+
+.btn-finish-pulse {
+    background: var(--success-green);
+    color: white;
+    border: none;
+    padding: 20px;
+    border-radius: 12px;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 20px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.98); }
+    70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(46, 204, 113, 0); }
+    100% { transform: scale(0.98); }
+}
+
+/* 7. STATUS & SYSTEM PILLS */
+.status-pill { 
+    display: inline-block; 
+    padding: 5px 10px; 
+    border-radius: 4px; 
+    font-size: 0.7rem; 
+    margin: 5px; 
+    background: #333; 
+}
+
+/* 8. RESULTS SCREEN */
+.results-summary-card {
+    background: var(--card-bg);
+    border: 2px solid var(--gold);
+    border-radius: 15px;
+    padding: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+.results-list { width: 100%; margin-top: 20px; }
+
+.final-stats-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 20px 0;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.stat-box { text-align: center; }
+.stat-label { font-size: 0.7rem; color: var(--gold); letter-spacing: 1px; }
+
+#final-total-points, #final-time-results {
+    font-size: 2.2rem; /* Slightly smaller to fit side-by-side */
+    font-weight: bold;
+    color: white;
+}
+
+.penalty-breakdown {
+    text-align: left;
+    margin: 20px 0;
+    padding: 0 10px;
+}
+
+.penalty-breakdown h3 { font-size: 0.9rem; color: #888; margin-bottom: 10px; }
+
+.penalty-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+}
+
+.penalty-val { color: var(--error-red); font-weight: bold; }
