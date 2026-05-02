@@ -732,3 +732,48 @@ function runSystemCheck() {
         startBtn.style.opacity = "0.5";
     }
 }
+
+document.getElementById('start-race-btn').addEventListener('click', () => {
+    // 1. Check Team Name
+    const teamName = document.getElementById('team-name-input').value.trim();
+    if (!teamName) {
+        alert("⚠️ MISSION ERROR: Team Name is required.");
+        return;
+    }
+
+    // 2. Check if a number of racers was selected
+    const count = parseInt(document.getElementById('member-count').value);
+    if (count === 0) {
+        alert("⚠️ MISSION ERROR: Please select the number of racers.");
+        return;
+    }
+
+    // 3. Check if all generated member inputs are filled
+    const memberInputs = document.querySelectorAll('.member-name-input');
+    let allNamesFilled = true;
+    let names = [];
+
+    memberInputs.forEach((input, index) => {
+        const name = input.value.trim();
+        if (!name) {
+            allNamesFilled = false;
+        } else {
+            names.push(name);
+        }
+    });
+
+    if (!allNamesFilled) {
+        alert("⚠️ MISSION ERROR: Please enter names for all selected racers.");
+        return;
+    }
+
+    // 4. Success! Now proceed to Access Code
+    const accessCode = prompt("ENTER MISSION ACCESS CODE:");
+    if (accessCode === RACE_CONFIG.accessCode) {
+        // Save data and start
+        window.currentTeamData = { teamName, members: names }; 
+        startRace();
+    } else if (accessCode !== null) { // Don't alert if they hit 'Cancel'
+        alert("ACCESS DENIED: Invalid Mission Code.");
+    }
+});
