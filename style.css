@@ -243,7 +243,13 @@ button.photo-upload-btn {
     margin: 10px 0;
     font-size: 1rem;
     font-weight: bold;
-    -webkit-appearance: none; /* Fixes iPad button styling */
+    
+    appearance: none;         /* Modern Standard */
+    -webkit-appearance: none; /* Safari, Chrome, iOS (iPad) */
+    -moz-appearance: none;    /* Firefox */
+    
+    /* Important for iPads: prevents gray highlights when tapping */
+    -webkit-tap-highlight-color: transparent;
 }
 
 button.photo-upload-btn.has-photo {
