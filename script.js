@@ -113,7 +113,7 @@ function preRaceCheck() {
     }
 
     // c. Check if all generated member inputs are filled
-    const memberInputs = document.querySelectorAll('.member-name-input');
+    const memberInputs = document.querySelectorAll('.member-input-name');
     let allNamesFilled = true;
     let names = [];
 
