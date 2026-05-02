@@ -6,7 +6,7 @@ const ASSETS = [
   './script.js',
   './tasks.js',
   './config.js',
-  //'./manifest.json',
+  './manifest.json',
   './jspdf.umd.min.js',
   './images/icon.png',
   // --- ADD YOUR MISSION IMAGES HERE ---
