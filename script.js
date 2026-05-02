@@ -545,7 +545,7 @@ async function downloadPDF() {
         doc.setFont(undefined, 'normal');
         doc.setFontSize(10);
         const roster = teamMembers.map(m => `${m.name} (${m.class})`).join(", ");
-        doc.text(`ROSTER: ${roster}`, 20, y);
+        doc.text(`MEMBERS: ${roster}`, 20, y);
 
         // --- 4. PHOTO DATA ---
         let photoData = {};
