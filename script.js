@@ -67,7 +67,6 @@ req.onsuccess = e => {
     
     // Check if other systems are ready to enable the Start button
     if (typeof runSystemCheck === "function") runSystemCheck();
-    //    if(teamName && startTime) renderHub(); else showWelcomeScreen();
 };
 
 req.onerror = e => {
@@ -724,7 +723,8 @@ function runSystemCheck() {
     const photosReady = document.getElementById('photoDB-indicator')?.innerText.includes("READY");
     const assetsReady = document.getElementById('asset-status-bar')?.innerText.includes("READY");
 
-    if (photosReady && assetsReady) {
+    //if (photosReady && assetsReady) {
+    if (assetsReady) {
         const startBtn = document.getElementById('start-race-btn');
         startBtn.disabled = false;
         startBtn.style.opacity = "1";
