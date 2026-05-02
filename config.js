@@ -6,7 +6,10 @@ const RACE_CONFIG = {
     hintPenalty: 25,            // Cost to reveal the hint (subtracted from task base pts)
     errorPenalty: 10,           // Points deducted for EVERY wrong guess
     
+    accessCode: abc123,               //access code to start the race
+
     // LOCKOUT SETTINGS
     maxAttemptsBeforeLock: 3,   // Number of wrong guesses before they get locked out
     lockoutBaseTime: 60000      // 60 seconds for the first lockout (in milliseconds) // 1 minute in milliseconds
+
 };

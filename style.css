@@ -243,7 +243,7 @@ button.photo-upload-btn {
     margin: 10px 0;
     font-size: 1rem;
     font-weight: bold;
-    
+
     appearance: none;         /* Modern Standard */
     -webkit-appearance: none; /* Safari, Chrome, iOS (iPad) */
     -moz-appearance: none;    /* Firefox */
@@ -352,3 +352,37 @@ button.photo-upload-btn.has-photo {
 }
 
 .penalty-val { color: var(--error-red); font-weight: bold; }
+
+/*Members input start*/
+.registration-form {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    margin-bottom: 20px;
+}
+
+.member-selection {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--gold); /* Use your gold variable */
+}
+
+#member-count {
+    background: #222;
+    color: white;
+    border: 1px solid #666;
+    padding: 5px;
+    margin-left: 10px;
+    border-radius: 4px;
+}
+
+.member-name-input {
+    background: rgba(0,0,0,0.3);
+    color: white;
+    border: 1px solid #555;
+    padding: 10px;
+    border-radius: 4px;
+}
+/*Members input end*/

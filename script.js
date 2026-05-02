@@ -720,14 +720,15 @@ function updateAssetStatus(status) {
 }
 
 function runSystemCheck() {
-    const photosReady = document.getElementById('photoDB-indicator')?.innerText.includes("READY");
     const assetsReady = document.getElementById('asset-status-bar')?.innerText.includes("READY");
-
-    //if (photosReady && assetsReady) {
+    const startBtn = document.getElementById('start-race-btn');
+    
     if (assetsReady) {
-        const startBtn = document.getElementById('start-race-btn');
         startBtn.disabled = false;
         startBtn.style.opacity = "1";
-        document.getElementById('check-msg').innerText = "ALL SYSTEMS ONLINE. PROCEED.";
+        document.getElementById('check-msg').innerText = "SYSTEMS SECURE. READY FOR TEAM REGISTRATION.";
+    } else {
+        startBtn.disabled = true;
+        startBtn.style.opacity = "0.5";
     }
 }
