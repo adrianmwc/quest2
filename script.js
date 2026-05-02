@@ -97,16 +97,17 @@ function generateMemberInputs() {
 }
 
 function startRace() {
+    //1. Check input for team name, members name
+    checkTeamMembers();
+
+    //2. get the input values
     const name = document.getElementById('team-name-input').value.trim();
     const memberEntries = document.querySelectorAll('#member-inputs-container > div');
+
     teamMembers = Array.from(memberEntries).map(entry => ({
         name: entry.querySelector('.input-name').value.trim(),
         class: entry.querySelector('.input-class').value.trim()
     }));
-
-    if (!name || teamMembers.some(m => !m.name)) {
-        alert("Enter Team Name and all Members!"); return;
-    }
 
     teamName = name;
     localStorage.setItem('teamName', teamName);
@@ -119,6 +120,48 @@ function startRace() {
     
     // 5. Build the task list
     renderHub();
+}
+
+function checkTeamMembers() {
+    // 1. Check Team Name
+    const teamName = document.getElementById('team-name-input').value.trim();
+    if (!teamName) {
+        alert("⚠️ MISSION ERROR: Team Name is required.");
+        return;
+    }
+
+    // 2. Check if a number of racers was selected
+    const count = parseInt(document.getElementById('member-count').value);
+    if (count === 0) {
+        alert("⚠️ MISSION ERROR: Please select the number of racers.");
+        return;
+    }
+
+    // 3. Check if all generated member inputs are filled
+    const memberInputs = document.querySelectorAll('.member-name-input');
+    let allNamesFilled = true;
+    let names = [];
+
+    memberInputs.forEach((input, index) => {
+        const name = input.value.trim();
+        if (!name) {
+            allNamesFilled = false;
+        } else {
+            names.push(name);
+        }
+    });
+
+    if (!allNamesFilled) {
+        alert("⚠️ MISSION ERROR: Please enter names for all selected racers.");
+        return;
+    }
+
+    // 4. Success! Now proceed to Access Code
+    const accessCode = prompt("ENTER MISSION ACCESS CODE:");
+    if (accessCode === RACE_CONFIG.accessCode) {
+    } else if (accessCode !== null) { // Don't alert if they hit 'Cancel'
+        alert("ACCESS DENIED: Invalid Mission Code.");
+    }
 }
 
 function renderHub() {
@@ -720,7 +763,7 @@ function updateAssetStatus(status) {
 }
 
 function runSystemCheck() {
-    const assetsReady = document.getElementById('asset-status-bar')?.innerText.includes("READY");
+    const assetsReady = document.getElementById('asset-status-bar')?.innerText.includes("CACHED");
     const startBtn = document.getElementById('start-race-btn');
     
     if (assetsReady) {
@@ -732,48 +775,3 @@ function runSystemCheck() {
         startBtn.style.opacity = "0.5";
     }
 }
-
-document.getElementById('start-race-btn').addEventListener('click', () => {
-    // 1. Check Team Name
-    const teamName = document.getElementById('team-name-input').value.trim();
-    if (!teamName) {
-        alert("⚠️ MISSION ERROR: Team Name is required.");
-        return;
-    }
-
-    // 2. Check if a number of racers was selected
-    const count = parseInt(document.getElementById('member-count').value);
-    if (count === 0) {
-        alert("⚠️ MISSION ERROR: Please select the number of racers.");
-        return;
-    }
-
-    // 3. Check if all generated member inputs are filled
-    const memberInputs = document.querySelectorAll('.member-name-input');
-    let allNamesFilled = true;
-    let names = [];
-
-    memberInputs.forEach((input, index) => {
-        const name = input.value.trim();
-        if (!name) {
-            allNamesFilled = false;
-        } else {
-            names.push(name);
-        }
-    });
-
-    if (!allNamesFilled) {
-        alert("⚠️ MISSION ERROR: Please enter names for all selected racers.");
-        return;
-    }
-
-    // 4. Success! Now proceed to Access Code
-    const accessCode = prompt("ENTER MISSION ACCESS CODE:");
-    if (accessCode === RACE_CONFIG.accessCode) {
-        // Save data and start
-        window.currentTeamData = { teamName, members: names }; 
-        startRace();
-    } else if (accessCode !== null) { // Don't alert if they hit 'Cancel'
-        alert("ACCESS DENIED: Invalid Mission Code.");
-    }
-});
