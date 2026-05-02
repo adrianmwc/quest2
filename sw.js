@@ -8,7 +8,7 @@ const ASSETS = [
   './config.js',
   //'./manifest.json',
   './jspdf.umd.min.js',
-  './images/icon-192.png',
+  './images/icon.png',
   // --- ADD YOUR MISSION IMAGES HERE ---
   './images/fountain.jpg',
   './images/statue.jpg',
