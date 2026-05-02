@@ -45,14 +45,38 @@ let sessionStart = 0; // Tracks the moment a task modal is opened
 
 // --- DATABASE ---
 const req = indexedDB.open("RacePhotoLog", 1);
+
+// This runs if the DB needs to be created or version updated
 req.onupgradeneeded = e => {
     db = e.target.result;
-    if (!db.objectStoreNames.contains("photos")) db.createObjectStore("photos", { keyPath: "taskId" });
+    if (!db.objectStoreNames.contains("photos")) {
+        db.createObjectStore("photos", { keyPath: "taskId" });
+    }
 };
-req.onsuccess = e => { 
-    db = e.target.result; 
-    runSystemCheck();
-    if(teamName && startTime) renderHub(); else showWelcomeScreen();
+
+// --- THE FIX: ADD THIS FOR THE INDICATOR ---
+req.onsuccess = e => {
+    db = e.target.result;
+    console.log("IndexedDB: Photos Database Connected.");
+    
+    const photoInd = document.getElementById('photoDB-indicator');
+    if (photoInd) {
+        photoInd.innerText = "PHOTOS: LOCAL STORAGE READY";
+        photoInd.style.background = "#27ae60"; // Turn Green
+    }
+    
+    // Check if other systems are ready to enable the Start button
+    if (typeof runSystemCheck === "function") runSystemCheck();
+    //    if(teamName && startTime) renderHub(); else showWelcomeScreen();
+};
+
+req.onerror = e => {
+    console.error("IndexedDB Error:", e.target.error);
+    const photoInd = document.getElementById('photoDB-indicator');
+    if (photoInd) {
+        photoInd.innerText = "PHOTOS: DATABASE ERROR";
+        photoInd.style.background = "#e74c3c"; // Turn Red
+    }
 };
 
 function showWelcomeScreen() {
@@ -697,15 +721,13 @@ function updateAssetStatus(status) {
 }
 
 function runSystemCheck() {
-    const bar = document.getElementById('asset-status-bar');
-    const isReady = bar && bar.innerText.includes("READY");
+    const photosReady = document.getElementById('photoDB-indicator')?.innerText.includes("READY");
+    const assetsReady = document.getElementById('asset-status-bar')?.innerText.includes("READY");
 
-    if (isReady && db) {
-        document.getElementById('check-msg').innerText = "ALL SYSTEMS GO. START MISSION.";
+    if (photosReady && assetsReady) {
         const startBtn = document.getElementById('start-race-btn');
-        if (startBtn) {
-            startBtn.disabled = false;
-            startBtn.style.opacity = "1";
-        }
+        startBtn.disabled = false;
+        startBtn.style.opacity = "1";
+        document.getElementById('check-msg').innerText = "ALL SYSTEMS ONLINE. PROCEED.";
     }
 }
