@@ -96,7 +96,7 @@ function generateMemberInputs() {
     }
 }
 
-function startRace() {
+function preRaceCheck() {
     //1. Check input for team name, members name
     // a. Check Team Name
     const teamName = document.getElementById('team-name-input').value.trim();
@@ -134,11 +134,14 @@ function startRace() {
     // 2. Success! Now proceed to Access Code
     const accessCode = prompt("ENTER MISSION ACCESS CODE:");
     if (accessCode === RACE_CONFIG.accessCode) {
+        startRace();
     } else if (accessCode !== null) { // Don't alert if they hit 'Cancel'
         alert("ACCESS DENIED: Invalid Mission Code.");
     }
+}
 
-    // 3. get the input values
+function startRace() {
+    // 1. get the input values
     const name = document.getElementById('team-name-input').value.trim();
     const memberEntries = document.querySelectorAll('#member-inputs-container > div');
 
@@ -151,12 +154,12 @@ function startRace() {
     localStorage.setItem('teamName', teamName);
     localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
     
-    // 4. START THE CLOCK
+    // 2. START THE CLOCK
     startTime = Date.now().toString();
     localStorage.setItem('startTime', startTime);
     startGlobalTimer();
     
-    // 5. Build the task list
+    // 3. Build the task list
     renderHub();
 }
 
