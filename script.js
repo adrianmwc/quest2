@@ -98,40 +98,36 @@ function generateMemberInputs() {
 
 function preRaceCheck() {
     //1. Check input for team name, members name
-    // a. Check Team Name
+    //1a. Check Team Name
     const teamName = document.getElementById('team-name-input').value.trim();
     if (!teamName) {
         alert("⚠️ MISSION ERROR: Team Name is required.");
         return;
     }
 
-    // b. Check if a number of racers was selected
+    //1b. Check if a number of racers was selected
     const count = parseInt(document.getElementById('member-count').value);
     if (count === 0) {
         alert("⚠️ MISSION ERROR: Please select the number of racers.");
         return;
     }
 
-    // c. Check if all generated member inputs are filled
-    const memberInputs = document.querySelectorAll('.member-input-name');
-    let allNamesFilled = true;
-    let names = [];
+    // 2a. Map the entries (Your existing code)
+    const memberEntries = document.querySelectorAll('#member-inputs-container > div');
+    teamMembers = Array.from(memberEntries).map(entry => ({
+        name: entry.querySelector('.input-name').value.trim(),
+        class: entry.querySelector('.input-class').value.trim()
+    }));
 
-    memberInputs.forEach((input, index) => {
-        const name = input.value.trim();
-        if (!name) {
-            allNamesFilled = false;
-        } else {
-            names.push(name);
-        }
-    });
+    // 2b. CHECK: Is any name or class blank?
+    const hasIncompleteEntry = teamMembers.some(m => m.name === "" || m.class === "");
 
-    if (!allNamesFilled) {
-        alert("⚠️ MISSION ERROR: Please enter names for all selected racers.");
-        return;
+    if (hasIncompleteEntry) {
+        alert("⚠️ MISSION DENIED: All racer names and classes must be filled out.");
+        return; // Exit the function so the Access Code prompt doesn't show
     }
 
-    // 2. Success! Now proceed to Access Code
+    // 3. Success! Now proceed to Access Code
     const accessCode = prompt("ENTER MISSION ACCESS CODE:");
     if (accessCode === RACE_CONFIG.accessCode) {
         startRace();
