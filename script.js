@@ -770,3 +770,20 @@ function runSystemCheck() {
         startBtn.style.opacity = "0.5";
     }
 }
+
+// Function to enlarge the image
+function zoomImage() {
+    const smallImg = document.getElementById('modal-image');
+    const overlay = document.getElementById('image-overlay');
+    const largeImg = document.getElementById('overlay-img');
+    
+    if (smallImg.src) {
+        largeImg.src = smallImg.src; // Copy the source
+        overlay.style.display = 'flex'; // Show the overlay
+    }
+}
+
+// Function to close the enlarged view
+function closeZoom() {
+    document.getElementById('image-overlay').style.display = 'none';
+}
