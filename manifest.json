@@ -1,11 +1,19 @@
 {
+  "name": "Mission Hub",
   "short_name": "Race",
-  "name": "The Amazing Race",
-  "icons": [
-    { "src": "images/icon-192.png", "type": "image/png", "sizes": "192x192" }
-  ],
-  "start_url": "./index.html",
-  "background_color": "#121212",
+  "start_url": "index.html",
   "display": "standalone",
-  "theme_color": "#ffde00"
+  
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  //"background_color": "#121212",
+  //"theme_color": "#ffde00"
+
+  "icons": [
+    {
+      "src": "./images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
 }

@@ -1,3 +1,33 @@
+// --- 1. PLACE IT HERE (TOP OF FILE) ---
+let refreshing = false;
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload(); 
+    });
+}
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+        // Check if assets are already cached
+        if (reg.active) {
+            updateAssetStatus("READY");
+        }
+
+        reg.addEventListener('updatefound', () => {
+            const installingWorker = reg.installing;
+            updateAssetStatus("CACHING...");
+            
+            installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'activated') {
+                    updateAssetStatus("READY");
+                }
+            };
+        });
+    });
+}
+
 let db;
 let teamName = localStorage.getItem('teamName') || "";
 let startTime = localStorage.getItem('startTime') || null;
@@ -93,7 +123,7 @@ function renderHub() {
         list.innerHTML += `
             <button class="task-card ${isDone ? 'completed' : ''}" onclick="openTask('${t.id}')">
                 <span>${t.title}</span>
-                <span style="font-weight:bold;">${isDone ? '✅ DONE' : t.pts + ' PTS'}</span>
+                <span style="font-weight:bold;">${isDone ? '✅ DONE' : t.pts + ' points'}</span>
             </button>`;
     });
 
@@ -103,7 +133,7 @@ function renderHub() {
     document.getElementById('progress-bar').innerText = p + "%";
     
     if (completedTasks.length === allTasks.length) document.getElementById('finish-btn').style.display = 'block';
-    startLiveTimer();
+    startGlobalTimer();
 }
 
 function openTask(id) {
@@ -256,7 +286,7 @@ async function submitPasscode() {
             localStorage.setItem('lockouts', JSON.stringify(lockouts));
             checkLockout();
         } else { 
-            alert("WRONG CODE!"); 
+            alert("WRONG CODE! " + attempts[currentTask.id] + " attempt(s)."); 
         }
     }
 }
@@ -278,17 +308,6 @@ function checkLockout() {
     }
 }
 
-function startLiveTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        const diff = Math.floor((Date.now() - parseInt(startTime)) / 1000);
-        const m = Math.floor(diff / 60).toString().padStart(2, '0');
-        const s = (diff % 60).toString().padStart(2, '0');
-        const timeStr = `${m}:${s}`;
-        if(document.getElementById('hub-timer')) document.getElementById('hub-timer').innerText = timeStr;
-    }, 1000);
-}
-
 function closeModal() {
     // If a task was being viewed, calculate time spent and add to the total
     if (currentTask && !completedTasks.includes(currentTask.id)) {
@@ -307,7 +326,14 @@ function closeModal() {
 
 async function showPitStop() {
     // 1. Stop all timers
-    clearInterval(timerInterval);
+    
+    // --- THE FIX: STOP THE CLOCK ---
+    if (window.timerInterval) {
+        clearInterval(window.timerInterval); //gobal timer variable
+        clearInterval(timerInterval); //local timer variable
+        console.log("Race Clock Frozen.");
+    }
+    // -------------------------------
     if(lockoutTimerInterval) clearInterval(lockoutTimerInterval);
 
     // 2. Switch screen visibility
@@ -355,18 +381,40 @@ async function showPitStop() {
         const s = totalSecs % 60;
         const timeString = `${m}m ${s}s`;
 
+          // Determine visual markers
+        const statusClass = isDone ? "status-completed" : "status-incomplete";
+        const statusText = isDone ? "COMPLETED" : "NOT FINISHED";
+        const statusColor = isDone ? '#27ae60' : '#ff4d4d'; // Green vs Red
+
+        // 3. DEBUG: Check the console on your iPad/Laptop to see the truth
+        console.log(`Task ${t.id} - isDone: ${isDone} - class: ${statusClass}`);
+
         html += `
-            <div class="task-card completed" style="flex-direction:column; align-items:flex-start; margin-bottom: 15px;">
+            <div class="task-card ${statusClass}" style="flex-direction:column; align-items:flex-start; margin-bottom: 15px;">
                 <div style="font-weight:bold; margin-bottom:10px; width:100%; display:flex; justify-content:space-between;">
                     <span>${t.title}</span>
-                    <span style="color:var(--gold);">${finalTaskScore} PTS</span>
+                    <span class="status-label" style="background:${statusColor}; color:white;">${statusText}</span>
                 </div>
-                ${photoData[t.id] ? `<img src="${photoData[t.id]}" style="width:100%; border-radius:8px; margin-bottom:10px;">` : '<div style="color:#888; font-style:italic; margin-bottom:10px;">No photo captured</div>'}
-                <div style="font-size:0.75rem; color:#bbb;">
-                    Base: ${t.pts} | Hints: -${h} | Errors: -${e}
-                    | Time Spent: ${timeString}
+
+                <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%;">
+                    <span style="font-size: 0.9rem; color: #bbb;">
+                        Base: ${t.pts} | Hints: -${h} | Errors: -${e}
+                    </span>
+                    <span style="color: var(--gold); font-weight: 800; font-size: 1.1rem; margin-left: 10px;">
+                        ${finalTaskScore} points
+                    </span>
                 </div>
-            </div>`;
+
+                <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%;">
+                    Time Spent: ${timeString} <p>
+                </div>
+
+                 ${photoData[t.id] ? 
+                    `<img src="${photoData[t.id]}" style="width:100%; border-radius:8px; margin-bottom:10px; border:1px solid #444;">` : 
+                    (isDone ? '<div style="color:#888; font-size:0.8rem; margin-bottom:10px;">(No photo evidence provided)</div>' : '')
+                }               
+  
+            </div>`;      
 
     });
 
@@ -387,24 +435,45 @@ async function downloadPDF() {
     try {
         // --- 1. CALCULATE TOTAL ---
         let grandTotal = 0;
+        let totalHintPenalties = 0;  // NEW: Track total hint points lost
+        let totalErrorPenalties = 0; // NEW: Track total error points lost
+
         allTasks.forEach(t => {
             if (completedTasks.includes(t.id)) {
                 const h = hintsUsed.includes(t.id) ? (RACE_CONFIG.hintPenalty || 0) : 0;
                 const e = (attempts[t.id] || 0) * (RACE_CONFIG.errorPenalty || 0);
+
+                // Add to the Grand Totals
+                totalHintPenalties += h;
+                totalErrorPenalties += e;
+
                 grandTotal += Math.max(0, t.pts - h - e);
             }
         });
 
         // --- 2. HEADER ---
-        doc.setFillColor(30, 30, 30);
+        //doc.setFillColor(30, 30, 30);
+        doc.setFillColor(211, 211, 211);
         doc.rect(0, 0, 210, 45, 'F');
-        doc.setTextColor(255, 222, 0); 
+        //doc.setTextColor(255, 222, 0); 
+        doc.setTextColor(40);
         doc.setFontSize(22);
         doc.text("OFFICIAL MISSION REPORT", 20, 20);
         doc.setFontSize(14);
-        doc.text(`TOTAL SCORE: ${grandTotal} PTS`, 20, 32);
+        doc.text(`TOTAL SCORE: ${grandTotal} points`, 20, 32);
         const timeVal = document.getElementById('final-time-display')?.innerText || "00:00";
         doc.text(`FINAL TIME: ${timeVal}`, 140, 32);
+
+        doc.setFontSize(8);
+        const potentialScore = grandTotal + totalHintPenalties + totalErrorPenalties;
+        doc.setTextColor(0, 0, 150); // Reddish text for penalties
+        doc.text(`Potential Score: ${potentialScore} points`, 20, 38);
+        // In your UI:
+        doc.text(`Efficiency: ${((grandTotal / potentialScore) * 100).toFixed(1)}%`, 20, 42);
+
+        doc.setTextColor(150, 0, 0); // Reddish text for penalties
+        doc.text(`Hint Deductions: -${totalHintPenalties} points`, 140, 38);
+        doc.text(`Lockout/Error Penalties: -${totalErrorPenalties} points`, 140, 42);
 
         // --- 3. TEAM INFO ---
         doc.setTextColor(40);
@@ -480,7 +549,7 @@ async function downloadPDF() {
             doc.text(`Errors: -${e}`, 130, y + 22);
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text(`${score} PTS`, 175, y + 17);
+            doc.text(`${score} points`, 175, y + 17);
             
             y += 45;
             doc.setFont(undefined, 'normal');
@@ -514,13 +583,6 @@ function adminResetTrigger() {
     }
 }
 
-function runSystemCheck() {
-    document.getElementById('db-indicator').style.background = db ? "#27ae60" : "#e74c3c";
-    document.getElementById('storage-indicator').style.background = "#27ae60";
-    document.getElementById('offline-indicator').innerText = navigator.onLine ? "LINK: ONLINE" : "LINK: OFFLINE";
-    document.getElementById('offline-indicator').style.background = navigator.onLine ? "#3498db" : "#f39c12";
-}
-
 function revealHint() {
     if(confirm(`Use hint for -${RACE_CONFIG.hintPenalty} points?`)) {
         alert(currentTask.hint);
@@ -532,34 +594,118 @@ function revealHint() {
 }
 
 function startGlobalTimer() {
-    // Check if a start time already exists in storage
-    let startTime = localStorage.getItem('raceStartTime');
+    // 1. Consistency Check: Use the existing variable name 'startTime'
+    let savedStart = localStorage.getItem('startTime');
     
-    if (!startTime) {
+    if (!savedStart) {
+        // If no start time exists, set it now
         startTime = Date.now();
-        localStorage.setItem('raceStartTime', startTime);
+        localStorage.setItem('startTime', startTime);
     } else {
-        startTime = parseInt(startTime);
+        // Parse the existing one
+        startTime = parseInt(savedStart);
     }
 
-    // Update the UI every second
-    setInterval(() => {
+    // 2. Clear any existing intervals to prevent double-speed ticking
+    if (window.timerInterval) clearInterval(window.timerInterval);
+
+    window.timerInterval = setInterval(() => {
         const now = Date.now();
         const elapsed = now - startTime;
         
+        // Prevent negative numbers during system lag
+        if (elapsed < 0) return;
+
+        // Calculate H : M : S
         const h = Math.floor(elapsed / 3600000);
         const m = Math.floor((elapsed % 3600000) / 60000);
         const s = Math.floor((elapsed % 60000) / 1000);
 
-        const timerDisplay = document.querySelector('.timer-mini');
+        // 3. Update the UI
+        // We look for the ID 'hub-timer' used in your HTML
+        const timerDisplay = document.getElementById('hub-timer');
         if (timerDisplay) {
-            // Formats as 00:00 or 1:00:00 if over an hour
-            const timeString = `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            const timeString = `${h >= 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             timerDisplay.innerText = timeString;
             
-            // Also update the hidden final-time-display for the PDF
+            // 4. Update the hidden field for the PDF and Pit Stop screen
             const finalDisplay = document.getElementById('final-time-display');
             if (finalDisplay) finalDisplay.innerText = timeString;
+
+            const finalResults = document.getElementById('final-time-results');
+            if (finalResults) finalResults.innerText = timeString;
         }
     }, 1000);
+}
+
+function resumeRace() {
+    console.log("Returning to Hub...");
+
+    // 1. Switch Screen Visibility
+    const pitStop = document.getElementById('pit-stop-screen');
+    const hub = document.getElementById('hub-screen');
+
+    if (pitStop && hub) {
+        pitStop.classList.remove('active');
+        hub.classList.add('active');
+    }
+
+    // 2. Restart the live ticking timer
+    // This ensures the clock resumes from where it should be
+    if (typeof startGlobalTimer === "function") {
+        startGlobalTimer();
+    }
+
+    // 3. Refresh the Hub (Progress bar, task states, etc.)
+    if (typeof renderHub === "function") {
+        renderHub();
+    }
+}
+
+function checkNetworkStatus() {
+    const offlineInd = document.getElementById('offline-indicator');
+    if (!offlineInd) return;
+
+    if (navigator.onLine) {
+        offlineInd.innerText = "LINK: ONLINE";
+        offlineInd.style.background = "#27ae60"; // Green
+    } else {
+        // For an offline race, being offline is actually "Ready"
+        offlineInd.innerText = "LINK: OFFLINE"; 
+        offlineInd.style.background = "#e67e22"; // Orange
+    }
+}
+
+// Check every time the connection changes
+window.addEventListener('online', checkNetworkStatus);
+window.addEventListener('offline', checkNetworkStatus);
+// Initial check
+checkNetworkStatus();
+
+function updateAssetStatus(status) {
+    const bar = document.getElementById('asset-status-bar');
+    if (!bar) return;
+
+    if (status === "READY") {
+        bar.innerText = "ASSETS: CACHED (OFFLINE)";
+        bar.style.background = "#27ae60"; // Green
+        runSystemCheck(); // Allow the race to start
+    } else {
+        bar.innerText = "ASSETS: DOWNLOADING...";
+        bar.style.background = "#f1c40f"; // Yellow
+    }
+}
+
+function runSystemCheck() {
+    const bar = document.getElementById('asset-status-bar');
+    const isReady = bar && bar.innerText.includes("READY");
+
+    if (isReady && db) {
+        document.getElementById('check-msg').innerText = "ALL SYSTEMS GO. START MISSION.";
+        const startBtn = document.getElementById('start-race-btn');
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.style.opacity = "1";
+        }
+    }
 }

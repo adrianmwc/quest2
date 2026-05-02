@@ -6,14 +6,26 @@ const ASSETS = [
   './script.js',
   './tasks.js',
   './config.js',
-  './manifest.json',
+  //'./manifest.json',
   './jspdf.umd.min.js',
-  './images/icon-192.png'
+  './images/icon-192.png',
+  // --- ADD YOUR MISSION IMAGES HERE ---
+  './images/fountain.jpg',
+  './images/statue.jpg',
+  './images/library.jpg' 
+  // ------------------------------------
 ];
 
 self.addEventListener('install', e => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+    self.skipWaiting();
+    e.waitUntil(
+        caches.open(CACHE_NAME).then(c => {
+            console.log("Service Worker: Caching files...");
+            return c.addAll(ASSETS).catch(err => {
+                console.error("Cache addAll failed! Check your ASSETS list.", err);
+            });
+        })
+    );
 });
 
 self.addEventListener('activate', e => {
