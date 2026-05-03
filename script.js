@@ -757,8 +757,8 @@ function runSystemCheck() {
         startBtn.style.opacity = "1";
         document.getElementById('check-msg').innerText = "SYSTEMS SECURE. READY FOR TEAM REGISTRATION.";
     } else {
-        //startBtn.disabled = true;
-        //startBtn.style.opacity = "0.5";
+        startBtn.disabled = true;
+        startBtn.style.opacity = "0.5";
     }
 }
 
