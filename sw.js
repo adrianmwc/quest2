@@ -13,7 +13,7 @@ const ASSETS = [
   './images/01-fountain.jpg',
   './images/02-statue.jpg',
   './images/03-library.jpg',
-  './images/04-library.jpg'
+  './images/04-bust.jpg'
   // ------------------------------------
 ];
 
