@@ -1,4 +1,4 @@
-const CACHE_NAME = 'race-v1';
+const CACHE_NAME = 'race-v2';
 const ASSETS = [
   './',
   './index.html',
