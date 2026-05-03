@@ -425,33 +425,48 @@ button.photo-upload-btn.has-photo {
 }
 /*Members input end*/
 
-
-/*Admin section start*/
-.admin-section {
+/*admin section table format start*/
+.storageAdmin-section {
     background: #1a1a1a;
     color: #00ff00; /* Neon green terminal look */
     padding: 20px;
     font-family: monospace;
 }
 
-.storage-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 30px;
+.storage-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-family: 'Courier New', Courier, monospace;
+    color: #e0e0e0;
+    background: rgba(255, 255, 255, 0.05);
 }
 
-.storage-card {
-    background: #222;
-    padding: 15px;
-    border: 1px solid #444;
-    text-align: center;
+.storage-table th, .storage-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #444;
 }
 
-.size-val {
-    font-size: 1.5rem;
+.storage-table th {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--gold, #f1c40f); /* Or your preferred highlight color */
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.text-right {
+    text-align: right;
     font-weight: bold;
-    color: white;
+    color: #00ff00; /* Neon green for the values */
+}
+
+.quota-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 5px;
 }
 
 .total-bar {
@@ -468,4 +483,31 @@ button.photo-upload-btn.has-photo {
     background: linear-gradient(90deg, #27ae60, #f1c40f, #e74c3c);
     transition: width 0.5s ease;
 }
-/*admin section end*/
+
+.total-bar-container {
+    margin-top: 20px;
+    padding: 10px 0;
+}
+/*admin section table format end*/
+
+#storage-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999; /* Higher than task windows */
+    background: #444;
+    color: #00ff00; /* Terminal Green */
+    border: 2px solid #00ff00;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+#storage-toggle-btn:active {
+    transform: scale(0.95);
+    background: #00ff00;
+    color: #000;
+}

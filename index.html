@@ -135,36 +135,46 @@
         <div id="final-time-display" style="display:none;">00:00</div>
     </div>
 
-    <div id="admin-storage-panel" class="admin-section active">
+    <div id="admin-storage-panel" class="storageAdmin-section" hidden>
         <h2>SYSTEM STORAGE MONITOR</h2>
         <hr>
         
-        <div class="storage-grid">
-            <div class="storage-card">
-                <h3>Text Data (LocalStorage)</h3>
-                <p>Tasks, Hints, & Team Info</p>
-                <div class="size-val" id="size-local">0 KB</div>
-            </div>
-
-            <div class="storage-card">
-                <h3>App Assets (Cache)</h3>
-                <p>UI, Scripts, & Mission Clues</p>
-                <div class="size-val" id="size-cache">0 MB</div>
-            </div>
-
-            <div class="storage-card">
-                <h3>Photo Log (IndexedDB)</h3>
-                <p>Photos taken by teams</p>
-                <div class="size-val" id="size-idb">0 MB</div>
-            </div>
-        </div>
+        <table class="storage-table">
+            <thead>
+                <tr>
+                    <th>Storage Type</th>
+                    <th>Content</th>
+                    <th>Usage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>LocalStorage</strong></td>
+                    <td>Team Data & Progress</td>
+                    <td id="size-local" class="text-right">0 KB</td>
+                </tr>
+                <tr>
+                    <td><strong>Cache Storage</strong></td>
+                    <td>Mission Assets & Images</td>
+                    <td id="size-cache" class="text-right">0 MB</td>
+                </tr>
+                <tr>
+                    <td><strong>IndexedDB</strong></td>
+                    <td>Captured Photo Log</td>
+                    <td id="size-idb" class="text-right">0 KB</td>
+                </tr>
+            </tbody>
+        </table>
 
         <div class="total-bar-container">
-            <p>Total Usage vs. Browser Limit</p>
+            <div class="quota-header">
+                <span>Total Device Quota</span>
+                <small id="quota-text">Calculating...</small>
+            </div>
             <div class="total-bar"><div id="usage-fill"></div></div>
-            <small id="quota-text">Calculating quota...</small>
         </div>
-        <button id="storage-btn" onclick="getStorageStats()" class="btn-hint">Get Storage Data</button>
+        
+        <button id="storage-btn" onclick="getStorageStats()" class="btn-hint">REFRESH DATA</button>
     </div>
 
     <div id="image-overlay" class="overlay" onclick="closeZoom()">
@@ -179,5 +189,6 @@
             navigator.serviceWorker.register('sw.js');
         }
     </script>
+    <button id="storage-toggle-btn" onclick="toggleStorageScreen()">📊 STORAGE</button>
 </body>
 </html>

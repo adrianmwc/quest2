@@ -490,33 +490,27 @@ async function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
     
-    // Safety check: Is teamName valid?
     const safeTeamName = (teamName || "Team").replace(/\s+/g, '_');
 
     try {
-        // --- 1. CALCULATE TOTAL ---
+        // --- 1. CALCULATE TOTALS ---
         let grandTotal = 0;
-        let totalHintPenalties = 0;  // NEW: Track total hint points lost
-        let totalErrorPenalties = 0; // NEW: Track total error points lost
+        let totalHintPenalties = 0;
+        let totalErrorPenalties = 0;
 
         allTasks.forEach(t => {
             if (completedTasks.includes(t.id)) {
                 const h = hintsUsed.includes(t.id) ? (RACE_CONFIG.hintPenalty || 0) : 0;
                 const e = (attempts[t.id] || 0) * (RACE_CONFIG.errorPenalty || 0);
-
-                // Add to the Grand Totals
                 totalHintPenalties += h;
                 totalErrorPenalties += e;
-
                 grandTotal += Math.max(0, t.pts - h - e);
             }
         });
 
         // --- 2. HEADER ---
-        //doc.setFillColor(30, 30, 30);
         doc.setFillColor(211, 211, 211);
         doc.rect(0, 0, 210, 45, 'F');
-        //doc.setTextColor(255, 222, 0); 
         doc.setTextColor(40);
         doc.setFontSize(22);
         doc.text("OFFICIAL MISSION REPORT", 20, 20);
@@ -527,12 +521,11 @@ async function downloadPDF() {
 
         doc.setFontSize(8);
         const potentialScore = grandTotal + totalHintPenalties + totalErrorPenalties;
-        doc.setTextColor(0, 0, 150); // Reddish text for penalties
+        doc.setTextColor(0, 0, 150);
         doc.text(`Potential Score: ${potentialScore} points`, 20, 38);
-        // In your UI:
         doc.text(`Efficiency: ${((grandTotal / potentialScore) * 100).toFixed(1)}%`, 20, 42);
 
-        doc.setTextColor(150, 0, 0); // Reddish text for penalties
+        doc.setTextColor(150, 0, 0);
         doc.text(`Hint Deductions: -${totalHintPenalties} points`, 140, 38);
         doc.text(`Lockout/Error Penalties: -${totalErrorPenalties} points`, 140, 42);
 
@@ -557,15 +550,14 @@ async function downloadPDF() {
 
         // --- 5. MISSION ROWS ---
         y += 15;
-        // Headers
         doc.setFillColor(240, 240, 240);
         doc.rect(15, y, 180, 8, 'F');
         doc.setFont(undefined, 'bold');
         doc.text("MISSION", 20, y + 5);
-        doc.text("PHOTO EVIDENCE", 65, y + 5);
-        doc.text("BREAKDOWN", 130, y + 5);
+        doc.text("PHOTO EVIDENCE (ENLARGED)", 65, y + 5);
+        doc.text("BREAKDOWN", 145, y + 5);
         doc.text("TOTAL", 175, y + 5);
-        y += 8;
+        y += 12;
 
         for (let t of allTasks) {
             const isDone = completedTasks.includes(t.id);
@@ -573,8 +565,9 @@ async function downloadPDF() {
             const e = (attempts[t.id] || 0) * RACE_CONFIG.errorPenalty;
             const score = isDone ? Math.max(0, t.pts - h - e) : 0;
 
+            // Updated Row Spacing: Increased to 60 to accommodate larger photos
             doc.setDrawColor(220);
-            doc.line(15, y + 42, 195, y + 42);
+            doc.line(15, y + 55, 195, y + 55); 
 
             doc.setFontSize(10);
             doc.setFont(undefined, 'bold');
@@ -584,17 +577,17 @@ async function downloadPDF() {
             if (isDone) doc.setTextColor(46, 204, 113); else doc.setTextColor(231, 76, 60);
             doc.text(isDone ? "COMPLETED" : "INCOMPLETE", 20, y + 20);
 
-            //time taken for each tasks
             const totalSecs = taskCompletionTimes[t.id] || 0;
             const timeString = `${Math.floor(totalSecs / 60)}m ${totalSecs % 60}s`;
-            doc.setFontSize(8);
             doc.text(`Active Time: ${timeString}`, 20, y + 25);
 
             doc.setTextColor(40);
 
+            // --- IMAGE MODIFICATION HERE ---
             if (photoData[t.id]) {
                 try {
-                    doc.addImage(photoData[t.id], 'JPEG', 65, y + 2, 50, 35);
+                    // Original was 50x35. New is 75x52.5 (1.5x Increase)
+                    doc.addImage(photoData[t.id], 'JPEG', 65, y, 75, 52.5);
                 } catch (err) {
                     doc.text("[Image Error]", 65, y + 15);
                 }
@@ -605,25 +598,23 @@ async function downloadPDF() {
             }
 
             doc.setFontSize(9);
-            doc.text(`Base: ${t.pts}`, 130, y + 12);
-            doc.text(`Hints: -${h}`, 130, y + 17);
-            doc.text(`Errors: -${e}`, 130, y + 22);
+            doc.text(`Base: ${t.pts}`, 145, y + 12);
+            doc.text(`Hints: -${h}`, 145, y + 17);
+            doc.text(`Errors: -${e}`, 145, y + 22);
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text(`${score} points`, 175, y + 17);
+            doc.text(`${score} pts`, 175, y + 17);
             
-            y += 45;
+            // Increase Y increment from 45 to 60 to account for larger image height
+            y += 60; 
             doc.setFont(undefined, 'normal');
-            if (y > 230) { doc.addPage(); y = 20; }
-
+            
+            // Page break check (Lowered threshold to 220 because rows are taller)
+            if (y > 220) { doc.addPage(); y = 20; }
         }
 
-        // --- 6. FINAL SAVE / BLOB FOR IPAD ---
         const pdfBlob = doc.output('blob');
         const url = URL.createObjectURL(pdfBlob);
-        
-        // This creates a temporary link and clicks it, which is the most 
-        // reliable way to trigger a "Save to Files" prompt on iPad.
         const link = document.createElement('a');
         link.href = url;
         link.download = `Race_Report_${safeTeamName}.pdf`;
@@ -633,7 +624,7 @@ async function downloadPDF() {
         
     } catch (err) {
         console.error("PDF Error:", err);
-        alert("Failed to generate PDF. Make sure all photos are loaded.");
+        alert("Failed to generate PDF.");
     }
 }
 
@@ -766,8 +757,8 @@ function runSystemCheck() {
         startBtn.style.opacity = "1";
         document.getElementById('check-msg').innerText = "SYSTEMS SECURE. READY FOR TEAM REGISTRATION.";
     } else {
-        startBtn.disabled = true;
-        startBtn.style.opacity = "0.5";
+        //startBtn.disabled = true;
+        //startBtn.style.opacity = "0.5";
     }
 }
 
@@ -827,25 +818,21 @@ async function getStorageStats() {
     const transaction = db.transaction(["photos"], "readonly");
     const store = transaction.objectStore("photos");
     let idbTotal = 0;
+    let photoCount = 0; // Add a counter
 
-    // Use a cursor to iterate without loading all blobs into a single array
     store.openCursor().onsuccess = (event) => {
         const cursor = event.target.result;
         if (cursor) {
-            if (cursor.value.imageBlob) {
-                idbTotal += cursor.value.imageBlob.size;
-                console.log("Calculating photo size" + cursor.value.imageBlob.size);
+            if (cursor.value.data) {
+                console.log("Calculating photoSize ", cursor.value.data.length);
+                idbTotal += cursor.value.data.length;
+                photoCount++; // Increment for every photo found
             }
             cursor.continue();
         } else {
             // Update UI logic here...
-            // No more entries, update the UI
-
-            //const mbSize = (idbTotal / (1024 * 1024)).toFixed(2);
-            //document.getElementById('size-idb').innerText = mbSize + " MB";
-            // ... inside the cursor 'else' block (where the loop finishes) ...
-
-            const sizeInBytes = idbTotal;
+            //const sizeInBytes = await getIDBSize();
+            sizeInBytes = idbTotal;
             let displaySize;
 
             if (sizeInBytes < 1024 * 1024) {
@@ -856,6 +843,7 @@ async function getStorageStats() {
                 displaySize = (sizeInBytes / (1024 * 1024)).toFixed(2) + " MB";
             }
 
+            //document.getElementById('size-idb').innerText = `${displaySize} \n (${photoCount} Photos)`;
             document.getElementById('size-idb').innerText = displaySize;
         }
     };
@@ -869,5 +857,19 @@ async function getStorageStats() {
         
         document.getElementById('quota-text').innerText = `Using ${used}MB of ${total}MB available (${percent}%)`;
         document.getElementById('usage-fill').style.width = percent + "%";
+    }
+}
+
+function toggleStorageScreen() {
+    const panel = document.getElementById('admin-storage-panel');
+    
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        // Show the panel
+        panel.style.display = 'block';
+        // Refresh data automatically when opened
+        getStorageStats(); 
+    } else {
+        // Hide the panel
+        panel.style.display = 'none';
     }
 }
