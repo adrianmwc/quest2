@@ -757,7 +757,7 @@ function runSystemCheck() {
         startBtn.style.opacity = "1";
         document.getElementById('check-msg').innerText = "SYSTEMS SECURE. READY FOR TEAM REGISTRATION.";
     } else {
-        startBtn.disabled = true;
+        startBtn.disabled = true;           //commented for testing 
         startBtn.style.opacity = "0.5";
     }
 }
@@ -790,22 +790,41 @@ async function getStorageStats() {
     }
     document.getElementById('size-local').innerText = (localTotal / 1024).toFixed(2) + " KB";
 
-    // 2. Calculate Cache Storage Size (The ASSETS)
+    // 2. Calculate Cache Storage Size (Header-only Method)
     if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        let cacheTotal = 0;
-        for (const name of cacheNames) {
-            const cache = await caches.open(name);
-            const keys = await cache.keys();
-            for (const request of keys) {
-                const response = await cache.match(request);
-                if (response) {
-                    const blob = await response.blob();
-                    cacheTotal += blob.size;
+        try {
+            const cacheNames = await caches.keys();
+            let cacheTotal = 0;
+
+            for (const name of cacheNames) {
+                const cache = await caches.open(name);
+                const requests = await cache.keys();
+                
+                for (const request of requests) {
+                    const response = await cache.match(request);
+                    if (response) {
+                        // Try to get size from headers first (Fast & Memory-efficient)
+                        const contentLength = response.headers.get('content-length');
+                        
+                        if (contentLength) {
+                            cacheTotal += parseInt(contentLength, 10);
+                        } else {
+                            // Fallback: Only use blob if header is missing
+                            // This usually happens with 'opaque' cross-domain requests
+                            const blob = await response.blob();
+                            cacheTotal += blob.size;
+                        }
+                    }
                 }
             }
+            
+            const mbSize = (cacheTotal / (1024 * 1024)).toFixed(2);
+            document.getElementById('size-cache').innerText = mbSize + " MB";
+            
+        } catch (err) {
+            console.error("Cache calculation failed:", err);
+            document.getElementById('size-cache').innerText = "Error";
         }
-        document.getElementById('size-cache').innerText = (cacheTotal / (1024 * 1024)).toFixed(2) + " MB";
     }
 
     // 3. Calculate IndexedDB Size (Improved Cursor Method)
@@ -823,11 +842,25 @@ async function getStorageStats() {
     store.openCursor().onsuccess = (event) => {
         const cursor = event.target.result;
         if (cursor) {
-            if (cursor.value.data) {
-                console.log("Calculating photoSize ", cursor.value.data.length);
-                idbTotal += cursor.value.data.length;
-                photoCount++; // Increment for every photo found
+
+            try {
+                // Log for debugging - check your console to see it counting!
+                console.log("Processing IDB Record for:", cursor.value.taskId);
+                console.log("Database Record:", cursor.value); // <--- LOOK AT THIS
+
+                // Access the 'data' field (which we found earlier is the Base64 string)
+                if (cursor.value.data) {
+                    console.log("Calculating photoSize ", cursor.value.data.length);
+                    // Add the length of the string to our total
+                    idbTotal += cursor.value.data.length;
+                    photoCount++;
+                }
+            } catch (err) {
+                console.error("Error calculating size for a record:", err);
             }
+
+            // CRITICAL: This must be outside any 'if(data)' check 
+            // to ensure we move to the next item even if 'data' is empty
             cursor.continue();
         } else {
             // Update UI logic here...
@@ -843,8 +876,8 @@ async function getStorageStats() {
                 displaySize = (sizeInBytes / (1024 * 1024)).toFixed(2) + " MB";
             }
 
-            //document.getElementById('size-idb').innerText = `${displaySize} \n (${photoCount} Photos)`;
-            document.getElementById('size-idb').innerText = displaySize;
+            document.getElementById('size-idb').innerText = `${displaySize} \n (${photoCount} Photos)`;
+            //document.getElementById('size-idb').innerText = displaySize;
         }
     };
 
@@ -872,4 +905,8 @@ function toggleStorageScreen() {
         // Hide the panel
         panel.style.display = 'none';
     }
+}
+
+function revealAdminTools() {
+    document.getElementById('storage-toggle-btn').style.display = 'block';
 }
