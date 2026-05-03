@@ -9,25 +9,32 @@ if ('serviceWorker' in navigator) {
 }
 
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(reg => {
-            // If there's already a controller, the assets are likely cached
-            if (navigator.serviceWorker.controller) {
-                updateAssetStatus("READY");
-            }
+    navigator.serviceWorker.register('sw.js').then(reg => {
+        
+        // 1. If there's an active controller and no pending updates, it's already READY
+        if (navigator.serviceWorker.controller && !reg.installing && !reg.waiting) {
+            updateAssetStatus("READY");
+        }
 
-            reg.onupdatefound = () => {
-                const worker = reg.installing;
-                updateAssetStatus("DOWNLOADING ASSETS...");
-                worker.onstatechange = () => {
-                    if (worker.state === 'activated') {
-                        updateAssetStatus("READY (Offline Optimized)");
-                        // Trigger a storage refresh now that assets are in
-                        getStorageStats(); 
-                    }
-                };
-            };
+        // 2. Handle updates or first-time installs
+        reg.addEventListener('updatefound', () => {
+            const worker = reg.installing;
+            updateAssetStatus("CACHING...");
+            
+            worker.addEventListener('statechange', () => {
+                // On iPad, 'activated' is the target, but we also check if it's controlling the page
+                if (worker.state === 'activated') {
+                    updateAssetStatus("READY");
+                    // Force a refresh of the storage stats UI
+                    if (typeof getStorageStats === "function") getStorageStats();
+                }
+            });
         });
+    });
+
+    // 3. Extra Safety: Listen for the controllerchange event
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        updateAssetStatus("READY");
     });
 }
 
