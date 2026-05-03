@@ -821,7 +821,7 @@ async function getStorageStats() {
     const dbRequest = indexedDB.open("RacePhotoLog", 1);
     dbRequest.onsuccess = (e) => {
         const db = e.target.result;
-        const transaction = db.transaction("photos", "readonly");
+        const transaction = db.transaction(["photos"], "readonly");
         const store = transaction.objectStore("photos");
         let idbTotal = 0;
 
