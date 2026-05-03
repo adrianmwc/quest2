@@ -818,42 +818,46 @@ async function getStorageStats() {
     }
 
     // 3. Calculate IndexedDB Size (Improved Cursor Method)
-    const dbRequest = indexedDB.open("RacePhotoLog", 1);
-    dbRequest.onsuccess = (e) => {
-        const db = e.target.result;
-        const transaction = db.transaction(["photos"], "readonly");
-        const store = transaction.objectStore("photos");
-        let idbTotal = 0;
+    // Use the existing 'db' connection if it's already open
+    if (!db) {
+        console.warn("Database connection not ready yet.");
+        return;
+    }
 
-        // Use a cursor to iterate without loading all blobs into a single array
-        store.openCursor().onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                if (cursor.value.imageBlob) {
-                    idbTotal += cursor.value.imageBlob.size;
-                }
-                cursor.continue();
-            } else {
-                // No more entries, update the UI
+    const transaction = db.transaction(["photos"], "readonly");
+    const store = transaction.objectStore("photos");
+    let idbTotal = 0;
 
-                //const mbSize = (idbTotal / (1024 * 1024)).toFixed(2);
-                //document.getElementById('size-idb').innerText = mbSize + " MB";
-                // ... inside the cursor 'else' block (where the loop finishes) ...
-
-                const sizeInBytes = idbTotal;
-                let displaySize;
-
-                if (sizeInBytes < 1024 * 1024) {
-                    // Show KB if under 1MB
-                    displaySize = (sizeInBytes / 1024).toFixed(2) + " KB";
-                } else {
-                    // Show MB if over 1MB
-                    displaySize = (sizeInBytes / (1024 * 1024)).toFixed(2) + " MB";
-                }
-
-                document.getElementById('size-idb').innerText = displaySize;
+    // Use a cursor to iterate without loading all blobs into a single array
+    store.openCursor().onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+            if (cursor.value.imageBlob) {
+                idbTotal += cursor.value.imageBlob.size;
+                console.log("Calculating photo size" + cursor.value.imageBlob.size);
             }
-        };
+            cursor.continue();
+        } else {
+            // Update UI logic here...
+            // No more entries, update the UI
+
+            //const mbSize = (idbTotal / (1024 * 1024)).toFixed(2);
+            //document.getElementById('size-idb').innerText = mbSize + " MB";
+            // ... inside the cursor 'else' block (where the loop finishes) ...
+
+            const sizeInBytes = idbTotal;
+            let displaySize;
+
+            if (sizeInBytes < 1024 * 1024) {
+                // Show KB if under 1MB
+                displaySize = (sizeInBytes / 1024).toFixed(2) + " KB";
+            } else {
+                // Show MB if over 1MB
+                displaySize = (sizeInBytes / (1024 * 1024)).toFixed(2) + " MB";
+            }
+
+            document.getElementById('size-idb').innerText = displaySize;
+        }
     };
 
     // 4. Get Global Browser Quota (Max Limit)
