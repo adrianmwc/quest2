@@ -787,3 +787,61 @@ function zoomImage() {
 function closeZoom() {
     document.getElementById('image-overlay').style.display = 'none';
 }
+
+// Admin function to check storage status
+async function getStorageStats() {
+    // 1. Calculate LocalStorage Size (in KB)
+    let localTotal = 0;
+    for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+            localTotal += (localStorage[key].length + key.length) * 2;
+        }
+    }
+    document.getElementById('size-local').innerText = (localTotal / 1024).toFixed(2) + " KB";
+
+    // 2. Calculate Cache Storage Size (The ASSETS)
+    if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        let cacheTotal = 0;
+        for (const name of cacheNames) {
+            const cache = await caches.open(name);
+            const keys = await cache.keys();
+            for (const request of keys) {
+                const response = await cache.match(request);
+                if (response) {
+                    const blob = await response.blob();
+                    cacheTotal += blob.size;
+                }
+            }
+        }
+        document.getElementById('size-cache').innerText = (cacheTotal / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    // 3. Calculate IndexedDB Size (The Photos)
+    const dbRequest = indexedDB.open("RacePhotoLog", 1);
+    dbRequest.onsuccess = (e) => {
+        const db = e.target.result;
+        const transaction = db.transaction("photos", "readonly");
+        const store = transaction.objectStore("photos");
+        const getAllRequest = store.getAll();
+        
+        getAllRequest.onsuccess = () => {
+            let idbTotal = 0;
+            getAllRequest.result.forEach(item => {
+                if (item.imageBlob) idbTotal += item.imageBlob.size;
+            });
+            document.getElementById('size-idb').innerText = (idbTotal / (1024 * 1024)).toFixed(2) + " MB";
+        };
+    };
+
+    // 4. Get Global Browser Quota (Max Limit)
+    if (navigator.storage && navigator.storage.estimate) {
+        const estimate = await navigator.storage.estimate();
+        const used = (estimate.usage / (1024 * 1024)).toFixed(1);
+        const total = (estimate.quota / (1024 * 1024)).toFixed(1);
+        const percent = ((estimate.usage / estimate.quota) * 100).toFixed(2);
+        
+        document.getElementById('quota-text').innerText = `Using ${used}MB of ${total}MB available (${percent}%)`;
+        document.getElementById('usage-fill').style.width = percent + "%";
+    }
+}

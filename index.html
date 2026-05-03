@@ -135,6 +135,37 @@
         <div id="final-time-display" style="display:none;">00:00</div>
     </div>
 
+    <div id="admin-storage-panel" class="admin-section active">
+        <h2>SYSTEM STORAGE MONITOR</h2>
+        <hr>
+        
+        <div class="storage-grid">
+            <div class="storage-card">
+                <h3>Text Data (LocalStorage)</h3>
+                <p>Tasks, Hints, & Team Info</p>
+                <div class="size-val" id="size-local">0 KB</div>
+            </div>
+
+            <div class="storage-card">
+                <h3>App Assets (Cache)</h3>
+                <p>UI, Scripts, & Mission Clues</p>
+                <div class="size-val" id="size-cache">0 MB</div>
+            </div>
+
+            <div class="storage-card">
+                <h3>Photo Log (IndexedDB)</h3>
+                <p>Photos taken by teams</p>
+                <div class="size-val" id="size-idb">0 MB</div>
+            </div>
+        </div>
+
+        <div class="total-bar-container">
+            <p>Total Usage vs. Browser Limit</p>
+            <div class="total-bar"><div id="usage-fill"></div></div>
+            <small id="quota-text">Calculating quota...</small>
+        </div>
+    </div>
+
     <div id="image-overlay" class="overlay" onclick="closeZoom()">
         <img id="overlay-img">
     </div>
