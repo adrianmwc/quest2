@@ -12,9 +12,7 @@ const ASSETS = [
   // --- MISSION IMAGES (Numbered 01-20) ---
   './images/01-fountain.jpg',
   './images/02-statue.jpg',
-  './images/03-library.jpg',
-  './images/04-library.jpg',
-  './images/05-garden.jpg'
+  './images/03-library.jpg'
   // ------------------------------------
 ];
 
