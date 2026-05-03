@@ -1,4 +1,4 @@
-const CACHE_NAME = 'race-v9';
+const CACHE_NAME = 'race-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -22,8 +22,16 @@ self.addEventListener('install', e => {
     e.waitUntil(
         caches.open(CACHE_NAME).then(c => {
             console.log("Service Worker: Caching files...");
-            return c.addAll(ASSETS).catch(err => {
-                console.error("Cache addAll failed! Check your ASSETS list.", err);
+
+            // Replace cache.addAll(ASSETS) with this:
+            ASSETS.map(async (url) => {
+                try {
+                    const cache = await caches.open(CACHE_NAME);
+                    await cache.add(url);
+                    console.log("Cached successfully:", url);
+                } catch (error) {
+                    console.error("❌ FAILED to cache:", url);
+                }
             });
         })
     );
