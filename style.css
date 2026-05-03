@@ -427,6 +427,7 @@ button.photo-upload-btn.has-photo {
 
 /*admin section table format start*/
 .storageAdmin-section {
+    display: none;
     background: #1a1a1a;
     color: #00ff00; /* Neon green terminal look */
     padding: 20px;
