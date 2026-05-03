@@ -3,8 +3,8 @@ const allTasks = [
         id: "station1",
         title: "The Old Fountain",
         location: "Central Plaza",
-        desc: "Find the bronze plaque. What is the last word? \n\nFrogs are carnivorous, cold-blooded amphibians known for their smooth skin, long hind legs designed for leaping, and a three-stage metamorphosis from aquatic, gill-breathing tadpoles to land-dwelling, lung-breathing adults. \n\nBelonging to the order Anura, over 7,000 species exist worldwide, thriving in moist environments where they breathe through lungs and specialized, permeable skin",
-        img: "fountain.jpg",
+        desc: "Find the bronze plaque. What is the last word? \n\nFrogs are carnivorous... specialized, permeable skin. \n\nAnswer is WATER",
+        img: "01-fountain.jpg",
         code: "WATER",
         pts: 100,
         hint: "Starts with W"
@@ -13,8 +13,8 @@ const allTasks = [
         id: "station2",
         title: "Statue Park",
         location: "Foyer",
-        desc: "What year is on the base?",
-        img: "statue.jpg",
+        desc: "What year is on the base? \n\nAnswer is 1892",
+        img: "02-statue.jpg",
         code: "1892",
         pts: 150,
         hint: "Late 19th century."
@@ -23,21 +23,180 @@ const allTasks = [
         id: "station3",
         title: "The Grand Pillars",
         location: "Main Entrance",
-        desc: "Count the total number of white pillars on the front of the Library building.",
+        desc: "Count the total number of white pillars on the front of the Library building. \n\nAnswer is 12",
         code: "12",
         pts: 200,
-        img: "library.jpg",
+        img: "03-library.jpg",
         hint: "It's an even number between 10 and 15."
     },
     {
         id: "station4",
         title: "Library Secret",
         location: "Main Library",
-        desc: "Locate the bust of the founder. What is the middle name?",
-        img: "library.jpg",
+        desc: "Locate the bust of the founder. What is the middle name? \n\nAnswer is ALEX",
+        img: "04-library.jpg",
         code: "ALEX",
         pts: 250,
         hint: "The statue is on the second floor near the archives."
+    },
+    {
+        id: "station5",
+        title: "The Sundial",
+        location: "Garden East",
+        desc: "Identify the Roman numeral for the number 4 on the dial. \n\nAnswer is IV",
+        img: "05-garden.jpg",
+        code: "IV",
+        pts: 100,
+        hint: "I and V."
+    },
+    {
+        id: "station6",
+        title: "Bronze Bench",
+        location: "North Path",
+        desc: "Who is the bench dedicated to? (Last Name) \n\nAnswer is MILLER",
+        img: "06-bench.jpg",
+        code: "MILLER",
+        pts: 150,
+        hint: "Check the metal strip on the backrest."
+    },
+    {
+        id: "station7",
+        title: "Clock Tower",
+        location: "Heritage Square",
+        desc: "How many small windows are on the north face of the tower? \n\nAnswer is 3",
+        img: "07-clock.jpg",
+        code: "3",
+        pts: 200,
+        hint: "Look way up near the clock face."
+    },
+    {
+        id: "station8",
+        title: "Iron Gates",
+        location: "West Entrance",
+        desc: "What animal is depicted at the top of the ironwork? \n\nAnswer is LION",
+        img: "08-gates.jpg",
+        code: "LION",
+        pts: 150,
+        hint: "The king of the jungle."
+    },
+    {
+        id: "station9",
+        title: "Memorial Tree",
+        location: "The Arboretum",
+        desc: "What type of tree was planted in 1995? \n\nAnswer is OAK",
+        img: "09-tree.jpg",
+        code: "OAK",
+        pts: 100,
+        hint: "Produces acorns."
+    },
+    {
+        id: "station10",
+        title: "Science Hall",
+        location: "Lab Wing",
+        desc: "What is the element name on room 302? \n\nAnswer is HELIUM",
+        img: "10-science.jpg",
+        code: "HELIUM",
+        pts: 250,
+        hint: "He on the periodic table."
+    },
+    {
+        id: "station11",
+        title: "The Amphitheater",
+        location: "Student Green",
+        desc: "How many concrete steps lead to the stage? \n\nAnswer is 8",
+        img: "11-stage.jpg",
+        code: "8",
+        pts: 150,
+        hint: "A number between 5 and 10."
+    },
+    {
+        id: "station12",
+        title: "Art Gallery",
+        location: "East Wing",
+        desc: "What color is the front door of the gallery? \n\nAnswer is RED",
+        img: "12-gallery.jpg",
+        code: "RED",
+        pts: 100,
+        hint: "Think of a fire truck."
+    },
+    {
+        id: "station13",
+        title: "The Bell",
+        location: "History Plaza",
+        desc: "What is the inscription year on the hanging bell? \n\nAnswer is 1855",
+        img: "13-bell.jpg",
+        code: "1855",
+        pts: 200,
+        hint: "Mid-19th century."
+    },
+    {
+        id: "station14",
+        title: "Sports Center",
+        location: "Athletic Field",
+        desc: "How many flagpoles are outside the main gym? \n\nAnswer is 5",
+        img: "14-gym.jpg",
+        code: "5",
+        pts: 150,
+        hint: "Count them from left to right."
+    },
+    {
+        id: "station15",
+        title: "Botanical Plaque",
+        location: "Greenhouse",
+        desc: "Which family do the lilies belong to? \n\nAnswer is LILIACEAE",
+        img: "15-plants.jpg",
+        code: "LILIACEAE",
+        pts: 300,
+        hint: "Scientific name on the small green sign."
+    },
+    {
+        id: "station16",
+        title: "The Archway",
+        location: "Campus Gate",
+        desc: "What is the motto written above the arch? \n\nAnswer is TRUTH",
+        img: "16-arch.jpg",
+        code: "TRUTH",
+        pts: 200,
+        hint: "The opposite of a lie."
+    },
+    {
+        id: "station17",
+        title: "Pond Overlook",
+        location: "Wetlands",
+        desc: "How many wooden planks make up the viewing bench? \n\nAnswer is 6",
+        img: "17-pond.jpg",
+        code: "6",
+        pts: 150,
+        hint: "Half a dozen."
+    },
+    {
+        id: "station18",
+        title: "Faculty Mural",
+        location: "Admin Building",
+        desc: "What is the primary fruit shown in the mural? \n\nAnswer is APPLE",
+        img: "18-mural.jpg",
+        code: "APPLE",
+        pts: 100,
+        hint: "Associated with teachers."
+    },
+    {
+        id: "station19",
+        title: "Hidden Well",
+        location: "Old Campus",
+        desc: "What is the diameter of the well cover in inches? \n\nAnswer is 24",
+        img: "19-well.jpg",
+        code: "24",
+        pts: 250,
+        hint: "Two feet."
+    },
+    {
+        id: "station20",
+        title: "Mission Finale",
+        location: "Grand Hall",
+        desc: "What is the floor pattern color in the center? \n\nAnswer is GOLD",
+        img: "20-hall.jpg",
+        code: "GOLD",
+        pts: 500,
+        hint: "A shiny precious metal."
     }
-    // Add more tasks here following the same format
 ];
