@@ -1,4 +1,4 @@
-const CACHE_NAME = 'race-v4';
+const CACHE_NAME = 'race-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -9,10 +9,27 @@ const ASSETS = [
   './manifest.json',
   './jspdf.umd.min.js',
   './images/icon.png',
-  // --- ADD YOUR MISSION IMAGES HERE ---
-  './images/fountain.jpg',
-  './images/statue.jpg',
-  './images/library.jpg' 
+  // --- MISSION IMAGES (Numbered 01-20) ---
+  './images/01-fountain.jpg',
+  './images/02-statue.jpg',
+  './images/03-library.jpg',
+  './images/04-library.jpg',
+  './images/05-garden.jpg',
+  './images/06-bench.jpg',
+  './images/07-clock.jpg',
+  './images/08-gates.jpg',
+  './images/09-tree.jpg',
+  './images/10-science.jpg',
+  './images/11-stage.jpg',
+  './images/12-gallery.jpg',
+  './images/13-bell.jpg',
+  './images/14-gym.jpg',
+  './images/15-plants.jpg',
+  './images/16-arch.jpg',
+  './images/17-pond.jpg',
+  './images/18-mural.jpg',
+  './images/19-well.jpg',
+  './images/20-hall.jpg'
   // ------------------------------------
 ];
 
