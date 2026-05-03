@@ -14,12 +14,7 @@ const ASSETS = [
   './images/02-statue.jpg',
   './images/03-library.jpg',
   './images/04-library.jpg',
-  './images/05-garden.jpg',
-  './images/06-bench.jpg',
-  './images/07-clock.jpg',
-  './images/08-gates.jpg',
-  './images/09-tree.jpg',
-  './images/10-science.jpg'
+  './images/05-garden.jpg'
   // ------------------------------------
 ];
 
