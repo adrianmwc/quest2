@@ -9,20 +9,23 @@ if ('serviceWorker' in navigator) {
 }
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-        // Check if assets are already cached
-        if (reg.active) {
-            updateAssetStatus("READY");
-        }
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            // If there's already a controller, the assets are likely cached
+            if (navigator.serviceWorker.controller) {
+                updateAssetStatus("READY");
+            }
 
-        reg.addEventListener('updatefound', () => {
-            const installingWorker = reg.installing;
-            updateAssetStatus("CACHING...");
-            
-            installingWorker.onstatechange = () => {
-                if (installingWorker.state === 'activated') {
-                    updateAssetStatus("READY");
-                }
+            reg.onupdatefound = () => {
+                const worker = reg.installing;
+                updateAssetStatus("DOWNLOADING ASSETS...");
+                worker.onstatechange = () => {
+                    if (worker.state === 'activated') {
+                        updateAssetStatus("READY (Offline Optimized)");
+                        // Trigger a storage refresh now that assets are in
+                        getStorageStats(); 
+                    }
+                };
             };
         });
     });
@@ -738,7 +741,7 @@ function updateAssetStatus(status) {
     const bar = document.getElementById('asset-status-bar');
     if (!bar) return;
 
-    if (status === "READY") {
+    if (status === "READY (Offline Optimized)") {
         bar.innerText = "ASSETS: CACHED (OFFLINE)";
         bar.style.background = "#27ae60"; // Green
         runSystemCheck(); // Allow the race to start
