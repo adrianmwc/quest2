@@ -817,20 +817,27 @@ async function getStorageStats() {
         document.getElementById('size-cache').innerText = (cacheTotal / (1024 * 1024)).toFixed(2) + " MB";
     }
 
-    // 3. Calculate IndexedDB Size (The Photos)
+    // 3. Calculate IndexedDB Size (Improved Cursor Method)
     const dbRequest = indexedDB.open("RacePhotoLog", 1);
     dbRequest.onsuccess = (e) => {
         const db = e.target.result;
         const transaction = db.transaction("photos", "readonly");
         const store = transaction.objectStore("photos");
-        const getAllRequest = store.getAll();
-        
-        getAllRequest.onsuccess = () => {
-            let idbTotal = 0;
-            getAllRequest.result.forEach(item => {
-                if (item.imageBlob) idbTotal += item.imageBlob.size;
-            });
-            document.getElementById('size-idb').innerText = (idbTotal / (1024 * 1024)).toFixed(2) + " MB";
+        let idbTotal = 0;
+
+        // Use a cursor to iterate without loading all blobs into a single array
+        store.openCursor().onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                if (cursor.value.imageBlob) {
+                    idbTotal += cursor.value.imageBlob.size;
+                }
+                cursor.continue();
+            } else {
+                // No more entries, update the UI
+                const mbSize = (idbTotal / (1024 * 1024)).toFixed(2);
+                document.getElementById('size-idb').innerText = mbSize + " MB";
+            }
         };
     };
 
