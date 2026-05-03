@@ -26,7 +26,7 @@ if ('serviceWorker' in navigator) {
                 if (worker.state === 'activated') {
                     updateAssetStatus("READY");
                     // Force a refresh of the storage stats UI
-                    if (typeof getStorageStats === "function") getStorageStats();
+                    //if (typeof getStorageStats === "function") getStorageStats();
                 }
             });
         });
