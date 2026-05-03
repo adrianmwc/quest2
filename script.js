@@ -835,8 +835,23 @@ async function getStorageStats() {
                 cursor.continue();
             } else {
                 // No more entries, update the UI
-                const mbSize = (idbTotal / (1024 * 1024)).toFixed(2);
-                document.getElementById('size-idb').innerText = mbSize + " MB";
+
+                //const mbSize = (idbTotal / (1024 * 1024)).toFixed(2);
+                //document.getElementById('size-idb').innerText = mbSize + " MB";
+                // ... inside the cursor 'else' block (where the loop finishes) ...
+
+                const sizeInBytes = idbTotal;
+                let displaySize;
+
+                if (sizeInBytes < 1024 * 1024) {
+                    // Show KB if under 1MB
+                    displaySize = (sizeInBytes / 1024).toFixed(2) + " KB";
+                } else {
+                    // Show MB if over 1MB
+                    displaySize = (sizeInBytes / (1024 * 1024)).toFixed(2) + " MB";
+                }
+
+                document.getElementById('size-idb').innerText = displaySize;
             }
         };
     };
