@@ -1,4 +1,4 @@
-const CACHE_NAME = 'race-v7';
+const CACHE_NAME = 'race-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -19,17 +19,7 @@ const ASSETS = [
   './images/07-clock.jpg',
   './images/08-gates.jpg',
   './images/09-tree.jpg',
-  './images/10-science.jpg',
-  './images/11-stage.jpg',
-  './images/12-gallery.jpg',
-  './images/13-bell.jpg',
-  './images/14-gym.jpg',
-  './images/15-plants.jpg',
-  './images/16-arch.jpg',
-  './images/17-pond.jpg',
-  './images/18-mural.jpg',
-  './images/19-well.jpg',
-  './images/20-hall.jpg'
+  './images/10-science.jpg'
   // ------------------------------------
 ];
 
