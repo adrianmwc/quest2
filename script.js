@@ -463,7 +463,7 @@ async function showPitStop() {
         html += `
             <div class="task-card ${statusClass}" style="flex-direction:column; align-items:flex-start; margin-bottom: 15px;">
                 <div style="font-weight:bold; margin-bottom:10px; width:100%; display:flex; justify-content:space-between;">
-                    <span>${t.id} ${t.title}</span>
+                    <span>${t.title}</span>
                     <span class="status-label" style="background:${statusColor}; color:white;">${statusText}</span>
                 </div>
 
