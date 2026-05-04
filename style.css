@@ -538,6 +538,6 @@ button.photo-upload-btn.has-photo {
 
 /* Active state (Full Green) */
 .admin-btn.active {
-    background: #2ecc71;
+    background: #cc7a2e;
     color: #1a1a1a; /* Dark text for contrast against green */
 }
