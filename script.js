@@ -197,11 +197,11 @@ function renderHub() {
         list.innerHTML += `
             <button class="task-card ${isDone ? 'completed' : ''}" onclick="openTask('${t.id}')">
                 <span>${t.title}</span>
-                <span style="font-weight:bold;">${isDone ? '✅ DONE' : t.pts + ' points'}</span>
+                <span style="color: var(--gold)"; font-weight:bold; font-size: 1.1rem;>${isDone ? '✅ DONE' : t.pts + ' points'}</span>
             </button>`;
     });
 
-    document.getElementById('hub-score').innerText = `Score: ${score}`;
+    document.getElementById('hub-score').innerText = `Total Score: ${score}`;
     const p = Math.round((completedTasks.length / allTasks.length) * 100);
     document.getElementById('progress-bar').style.width = p + "%";
     document.getElementById('progress-bar').innerText = p + "%";
@@ -221,7 +221,7 @@ function openTask(id) {
     // 1. Reset Inputs
     document.getElementById('passcode-input').value = ""; // Clears the text field
     
-    // 2. Reset Photo Preview
+    // 2. Reset Photo Preview (Default state)
     document.getElementById('task-photo-preview').src = ""; // Clears the image
     document.getElementById('photo-preview-container').style.display = 'none'; // Hides the container
     
@@ -234,19 +234,39 @@ function openTask(id) {
     document.getElementById('modal-desc').innerText = currentTask.desc;
     document.getElementById('modal-image').src = "images/" + currentTask.img;
     
-    // 5. Show Modal and Check Lockout
-    // Ensure the modal starts at the top so the X is visible
-    document.querySelector('.modal-content').scrollTop = 0;
-    document.getElementById('task-modal').style.display = 'block';
-
-    // 6. Reset photo button
+    // 5. Reset photo button (Default state)
     const photoBtn = document.querySelector('.photo-upload-btn');
     photoBtn.classList.remove('has-photo');
     photoBtn.innerText = "📷 Take a Team Photo at this location";
     photoBtn.style.borderColor = "#555";
     photoBtn.style.color = "white";
 
+    // --- 6. RELOAD PREVIOUSLY SAVED EVIDENCE ---
+    if (db) {
+        const tx = db.transaction(["photos"], "readonly");
+        const store = tx.objectStore("photos");
+        const getReq = store.get(id);
+
+        getReq.onsuccess = () => {
+            if (getReq.result && getReq.result.data) {
+                // If evidence is found, show it in the preview
+                document.getElementById('task-photo-preview').src =  getReq.result.data;
+                document.getElementById('photo-preview-container').style.display = 'block';
+
+                // Update button to show evidence is already attached
+                photoBtn.classList.add('has-photo');
+                photoBtn.innerText = "✅ Evidence Captured (Tap to change)";
+                photoBtn.style.borderColor = "#2ecc71"; // Green
+                photoBtn.style.color = "#2ecc71";
+            }
+        };
+    }
+
+    // 7. Show Modal and Check Lockout
+    // Ensure the modal starts at the top so the X is visible
+    document.querySelector('.modal-content').scrollTop = 0;
     document.getElementById('task-modal').style.display = 'block';
+
     checkLockout();
 }
 
@@ -277,21 +297,22 @@ function previewPhoto(event) {
             // Watermark logic
             const fs = Math.floor(canvas.width / 25);
             ctx.font = `bold ${fs}px sans-serif`;
-            ctx.fillStyle = "yellow";
-            ctx.shadowBlur = 10; ctx.shadowColor = "black";
+            ctx.fillStyle = "blue";
+            ctx.shadowBlur = 10; 
+            ctx.shadowColor = "yellow";
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
             const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
             ctx.fillText(`${teamName.toUpperCase()} | ${dateStr} | ${timeStr}`, fs, canvas.height - fs);
             
-            const data = canvas.toDataURL('image/jpeg', 0.7);
+            const data = canvas.toDataURL('image/jpeg', 1);
             
             // UI Updates
             document.getElementById('task-photo-preview').src = data;
             document.getElementById('photo-preview-container').style.display = 'block';
             const photoBtn = document.querySelector('.photo-upload-btn');
             photoBtn.classList.add('has-photo');
-            photoBtn.innerText = "✅ PHOTO CAPTURED";
+            photoBtn.innerText = "✅ Evidence Captured (Tap to change)";
 
             // Save to IndexedDB
             const transaction = db.transaction(["photos"], "readwrite");
@@ -567,7 +588,7 @@ async function downloadPDF() {
         doc.rect(15, y, 180, 8, 'F');
         doc.setFont(undefined, 'bold');
         doc.text("MISSION", 20, y + 5);
-        doc.text("PHOTO EVIDENCE (ENLARGED)", 65, y + 5);
+        doc.text("PHOTO EVIDENCE", 65, y + 5);
         doc.text("BREAKDOWN", 145, y + 5);
         doc.text("TOTAL", 175, y + 5);
         y += 12;
@@ -588,11 +609,12 @@ async function downloadPDF() {
             doc.setFont(undefined, 'normal');
             doc.setFontSize(8);
             if (isDone) doc.setTextColor(46, 204, 113); else doc.setTextColor(231, 76, 60);
-            doc.text(isDone ? "COMPLETED" : "INCOMPLETE", 20, y + 20);
+            doc.setFont(undefined, 'bold');
+            doc.text(isDone ? "COMPLETED" : "INCOMPLETE", 20, y + 25);
 
             const totalSecs = taskCompletionTimes[t.id] || 0;
             const timeString = `${Math.floor(totalSecs / 60)}m ${totalSecs % 60}s`;
-            doc.text(`Active Time: ${timeString}`, 20, y + 25);
+            doc.text(`Active Time: ${timeString}`, 20, y + 28);
 
             doc.setTextColor(40);
 
@@ -610,13 +632,14 @@ async function downloadPDF() {
                 doc.setFont(undefined, 'normal');
             }
 
+            doc.setFont(undefined, 'normal');
             doc.setFontSize(9);
             doc.text(`Base: ${t.pts}`, 145, y + 12);
             doc.text(`Hints: -${h}`, 145, y + 17);
             doc.text(`Errors: -${e}`, 145, y + 22);
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text(`${score} pts`, 175, y + 17);
+            doc.text(`${score} points`, 175, y + 17);
             
             // Increase Y increment from 45 to 60 to account for larger image height
             y += 60; 
@@ -883,7 +906,7 @@ async function getStorageStats() {
                 displaySize = (sizeInBytes / (1024 * 1024)).toFixed(2) + " MB";
             }
 
-            document.getElementById('size-idb').innerText = `${displaySize} \n (${photoCount} Photos)`;
+            document.getElementById('size-idb').innerText = `${displaySize}, ${photoCount} Photos`;
             //document.getElementById('size-idb').innerText = displaySize;
         }
     };
