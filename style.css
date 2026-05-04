@@ -526,6 +526,11 @@ button.photo-upload-btn.has-photo {
 
 /* Default state (Outline) */
 .admin-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999; /* Higher than task windows */
+    
     background: transparent;
     color: #2ecc71;
     border: 2px solid #2ecc71;
@@ -534,10 +539,13 @@ button.photo-upload-btn.has-photo {
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: bold;
+    
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 /* Active state (Full Green) */
 .admin-btn.active {
-    background: #cc7a2e;
+    background: #2ecc71;
     color: #1a1a1a; /* Dark text for contrast against green */
 }
