@@ -1,7 +1,7 @@
 const allTasks = [
     {
         id: "station1",
-        title: "Station 1: The Old Fountain",
+        title: "Station 1:\nThe Old Fountain",
         location: "Central Plaza",
         desc: "Find the bronze plaque. What is the last word? \n\nFrogs are carnivorous, cold-blooded amphibians known for their smooth skin, long hind legs designed for leaping, and a three-stage metamorphosis from aquatic, gill-breathing tadpoles to land-dwelling, lung-breathing adults. \n\nBelonging to the order Anura, over 7,000 species exist worldwide, thriving in moist environments where they breathe through lungs and specialized, permeable skin. \n\nAnswer is WATER",
         img: "01-fountain.jpg",
