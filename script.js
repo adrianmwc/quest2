@@ -925,15 +925,23 @@ async function getStorageStats() {
 
 function toggleStorageScreen() {
     const panel = document.getElementById('admin-storage-panel');
-    
+    const btn = document.getElementById('storage-toggle-btn');
+
     if (panel.style.display === 'none' || panel.style.display === '') {
         // Show the panel
         panel.style.display = 'block';
+
+        // 2. Add the "Full Green" class
+        btn.classList.add('active');
+
         // Refresh data automatically when opened
         getStorageStats(); 
     } else {
         // Hide the panel
         panel.style.display = 'none';
+        
+        // 3. Remove the class to go back to "Outline"
+        btn.classList.remove('active');
     }
 }
 

@@ -524,24 +524,20 @@ button.photo-upload-btn.has-photo {
 }
 /*admin section table format end*/
 
-#storage-toggle-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999; /* Higher than task windows */
-    background: #444;
-    color: #00ff00; /* Terminal Green */
-    border: 2px solid #00ff00;
-    padding: 10px 15px;
-    border-radius: 5px;
-    font-family: monospace;
-    font-weight: bold;
+/* Default state (Outline) */
+.admin-btn {
+    background: transparent;
+    color: #2ecc71;
+    border: 2px solid #2ecc71;
+    padding: 10px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+    font-weight: bold;
 }
 
-#storage-toggle-btn:active {
-    transform: scale(0.95);
-    background: #00ff00;
-    color: #000;
+/* Active state (Full Green) */
+.admin-btn.active {
+    background: #2ecc71;
+    color: #1a1a1a; /* Dark text for contrast against green */
 }
