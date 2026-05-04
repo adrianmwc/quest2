@@ -160,6 +160,9 @@ function startRace() {
     localStorage.setItem('teamName', teamName);
     localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
     
+    // Save the state
+    localStorage.setItem('race_started', 'true');
+
     // 2. START THE CLOCK
     startTime = Date.now().toString();
     localStorage.setItem('startTime', startTime);
@@ -738,12 +741,6 @@ function checkNetworkStatus() {
     }
 }
 
-// Check every time the connection changes
-window.addEventListener('online', checkNetworkStatus);
-window.addEventListener('offline', checkNetworkStatus);
-// Initial check
-checkNetworkStatus();
-
 function updateAssetStatus(status) {
     const bar = document.getElementById('asset-status-bar');
     if (!bar) return;
@@ -920,3 +917,23 @@ function toggleStorageScreen() {
 function revealAdminTools() {
     document.getElementById('storage-toggle-btn').style.display = 'block';
 }
+
+// Check every time the connection changes
+window.addEventListener('online', checkNetworkStatus);
+window.addEventListener('offline', checkNetworkStatus);
+// Initial check
+checkNetworkStatus();
+
+window.addEventListener('load', () => {
+    const hasStarted = localStorage.getItem('race_started');
+    const teamNameSaved = localStorage.getItem('teamName'); // Assuming you save team name
+
+    if (hasStarted === 'true' && teamNameSaved) {
+        // Skip Welcome, go to Hub
+        renderHub();
+        console.log("Resuming session for:", teamNameSaved);
+    } else {
+        // First time visit, show Welcome
+        showWelcomeScreen();
+    }
+});
