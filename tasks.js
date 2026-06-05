@@ -65,6 +65,7 @@ const allTasks = [
     },
     {
         id: "7",
+        category: "Creative",
         title: "Station 7 - Clock Tower",
         location: "Heritage Square",
         desc: "How many small windows are on the north face of the tower? \n\nAnswer is 3 (range 3.2-4.1)",
