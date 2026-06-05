@@ -45,6 +45,7 @@ const allTasks = [
     },
     {
         id: "5",
+        category: "Physical",
         title: "Station 5 - The Sundial",
         location: "Garden East",
         desc: "Identify the Roman numeral for the number 4 on the dial. \n\nAnswer is IV",
@@ -55,6 +56,7 @@ const allTasks = [
     },
     {
         id: "6",
+        category: "Physical",
         title: "Station 6 - Bronze Bench",
         location: "North Path",
         desc: "Who is the bench dedicated to? (Last Name) \n\nAnswer is MILLER",
