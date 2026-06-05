@@ -39,7 +39,7 @@ if ('serviceWorker' in navigator) {
 
     //***to bypass for laptop testing
     //***to comment out during production
-    updateAssetStatus("READY");
+    //updateAssetStatus("READY");
 }
 
 let db;
