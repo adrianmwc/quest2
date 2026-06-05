@@ -128,24 +128,57 @@ input[type="text"], select {
     min-height: 60px;
     box-sizing: border-box;
     font-size: 1.1rem; /* Slightly larger text for readability */
+    cursor: pointer; /* Added cursor pointer for laptop/desktop previewing */
+}
+
+/* ==================================================================
+   >>> NEW ADDITION: Vertically align badge above title inside card <<<
+   ================================================================== */
+.task-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px; /* Spacing between the badge and the title string */
+    flex: 1;  /* Allows text to take up remaining space smoothly */
+    padding-right: 15px; /* Prevents long text from colliding with the score */
+}
+
+/* Add a slight tactile hover effect for touch feedback */
+.task-card:active {
+    transform: scale(0.98);
 }
 
 .task-card.completed {
     background: #1e3a2a; /* Deep green */
-    border: 2px solid var(--success-green);
-    pointer-events: none;
+    /*border: 2px solid var(--success-green);
+    pointer-events: none;*/
+    border: 1px solid var(--success-green); /* Changed to 1px so layout sizes don't jitter */
+    /* Note: if you want the category color to remain visible on completed tasks, 
+       do not overwrite border-left here. */
 }
 
 /* Styling for finished tasks */
 .task-card.status-completed {
-    border-left: 5px solid #27ae60;
+    /*border-left: 5px solid #27ae60; */
+    border-left: 5px solid #27ae60 !important; /* Added !important to override dynamic js if needed */
     background: rgba(39, 174, 96, 0.1); /* Subtle green tint */
 }
 
 /* Styling for skipped/incomplete tasks */
 .task-card.status-incomplete {
-    border-left: 5px solid #e74c3c;
+    /*border-left: 5px solid #e74c3c; */
+    border-left: 5px solid #e74c3c !important; /* Added !important to override dynamic js if needed */
     background: rgba(231, 76, 60, 0.1); /* Subtle red tint */
+}
+
+.category-badge {
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #ffffff; /* White text looks great on vibrant background colors */
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
 }
 
 .status-label {
@@ -224,6 +257,16 @@ input[type="text"], select {
     margin: 0;
     padding-right: 45px; /* Adds a "buffer" so text won't go under the X */
     color: var(--gold); 
+}
+
+.modal-location-badge {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3498db; /* A bright accent color like blue */
+    text-transform: uppercase;
+    margin-top: -5px;      /* Pulls closer to the title */
+    margin-bottom: 15px;   /* Pushes the description down */
+    letter-spacing: 0.5px;
 }
 
 #modal-desc { font-size: 0.95rem; line-height: 1.4; color: #ccc; margin-bottom: 10px; }
@@ -523,6 +566,7 @@ button.photo-upload-btn.has-photo {
     padding: 10px 0;
 }
 /*admin section table format end*/
+
 
 /* Default state (Outline) */
 .admin-btn {

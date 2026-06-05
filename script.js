@@ -36,6 +36,10 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
         updateAssetStatus("READY");
     });
+
+    //***to bypass for laptop testing
+    //***to comment out during production
+    updateAssetStatus("READY");
 }
 
 let db;
@@ -55,6 +59,17 @@ let sessionStart = 0; // Tracks the moment a task modal is opened
 
 // --- DATABASE ---
 const req = indexedDB.open("RacePhotoLog", 1);
+
+// ====== ADD THIS CONFIGURATION TO THE TOP OF YOUR SCRIPT FILE ======
+//maps the categories to specific colors.
+const CATEGORY_COLORS = {
+    "Physical": "#e74c3c",   // Red
+    "Mental": "#3498db",     // Blue
+    "Creative": "#f1c40f",   // Yellow
+    "Mystery": "#9b59b6",    // Purple
+    "Default": "#2ecc71"     // Green (fallback if empty or unmatched)
+};
+// ==================================================================
 
 // This runs if the DB needs to be created or version updated
 req.onupgradeneeded = e => {
@@ -194,11 +209,31 @@ function renderHub() {
             s -= ((attempts[t.id] || 0) * RACE_CONFIG.errorPenalty);
             score += Math.max(0, s);
         }
+        /* old card code without the colored categories 
         list.innerHTML += `
             <button class="task-card ${isDone ? 'completed' : ''}" onclick="openTask('${t.id}')">
                 <span>${t.title}</span>
                 <span style="color: var(--gold)"; font-weight:bold; font-size: 1.1rem;>${isDone ? '✅ DONE' : t.pts + ' points'}</span>
+            </button>`;*/
+
+        // >>> NEW CHANGES START HERE <<<
+        // 1. Resolve category color configuration properties
+        const catColor = CATEGORY_COLORS[t.category] || CATEGORY_COLORS["Default"];
+        const catLabel = t.category ? t.category : "General";
+        const badgeStyle = t.category ? `background-color: ${catColor}; display: inline-block;` : 'display: none;';
+        
+        // 2. Inject inline 'border-left' and the dynamic badge element below
+        list.innerHTML += `
+            <button class="task-card ${isDone ? 'completed' : ''}" style="border-left: 5px solid ${catColor};" onclick="openTask('${t.id}')">
+                <div class="task-info">
+                    <span class="category-badge" style="${badgeStyle}">${catLabel}</span>
+                    <span class="task-title">${t.title}</span>
+                </div>
+                <span style="color: var(--gold); font-weight:bold; font-size: 1.1rem;">
+                    ${isDone ? '✅ DONE' : t.pts + ' points'}
+                </span>
             </button>`;
+        // >>> NEW CHANGES END HERE <<<
     });
 
     document.getElementById('hub-score').innerText = `Total Score: ${score}`;
@@ -231,6 +266,17 @@ function openTask(id) {
 
     // 4. Update Content
     document.getElementById('modal-title').innerText = currentTask.title;
+    
+    //document.getElementById('modal-location').innerText = "📍 " + currentTask.location;
+    // Check if location exists and is not empty
+    const locationEl = document.getElementById('modal-location');
+    if (currentTask.location && currentTask.location.trim() !== "") {
+        locationEl.innerText = "📍 " + currentTask.location;
+        locationEl.style.display = 'block'; // Make sure it is visible
+    } else {
+        locationEl.style.display = 'none';  // Hide it completely if blank
+    }
+
     document.getElementById('modal-desc').innerText = currentTask.desc;
     document.getElementById('modal-image').src = "images/" + currentTask.img;
     
@@ -349,9 +395,32 @@ async function submitPasscode() {
     }
 
     // 2. If photo exists, proceed with Passcode Check
-    const val = document.getElementById('passcode-input').value.trim().toUpperCase();
+    // old code, const val = document.getElementById('passcode-input').value.trim().toUpperCase();
+    // 2. Prepare inputs for evaluation
+    const val = document.getElementById('passcode-input').value.trim();
+    const targetCode = currentTask.code.trim(); // Target passcode configuration string
     
-    if(val === currentTask.code.toUpperCase()) {
+    let isCorrect = false;
+
+    // >>> RANGE CHECK LOGIC <<<
+    if (targetCode.includes('-')) {
+        const parts = targetCode.split('-');
+        const min = parseFloat(parts[0]);
+        const max = parseFloat(parts[1]);
+        const userNum = parseFloat(val);
+
+        // Check if values are valid numbers and user input falls within the range
+        if (!isNaN(min) && !isNaN(max) && !isNaN(userNum)) {
+            isCorrect = (userNum >= min && userNum <= max);
+        }
+    } else {
+        // Fallback to case-insensitive exact match for text passkeys or single values
+        isCorrect = (val.toUpperCase() === targetCode.toUpperCase());
+    }
+
+    // 3. Process Evaluation Results
+    //if(val === currentTask.code.toUpperCase()) {
+    if (isCorrect) {
         // 1. Capture the very last session time
         const finalSession = Math.floor((Date.now() - sessionStart) / 1000);
         taskCompletionTimes[currentTask.id] = (taskCompletionTimes[currentTask.id] || 0) + finalSession;
