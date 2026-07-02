@@ -399,24 +399,30 @@ async function submitPasscode() {
     // 2. Prepare inputs for evaluation
     const val = document.getElementById('passcode-input').value.trim();
     const targetCode = currentTask.code.trim(); // Target passcode configuration string
-    
-    let isCorrect = false;
 
-    // >>> RANGE CHECK LOGIC <<<
-    if (targetCode.includes('-')) {
-        const parts = targetCode.split('-');
-        const min = parseFloat(parts[0]);
-        const max = parseFloat(parts[1]);
-        const userNum = parseFloat(val);
+    // >>> MULTIPLE ANSWERS & RANGE CHECK LOGIC <<<
+    const allowedAnswers = targetCode.split('|');
 
-        // Check if values are valid numbers and user input falls within the range
-        if (!isNaN(min) && !isNaN(max) && !isNaN(userNum)) {
-            isCorrect = (userNum >= min && userNum <= max);
+    let isCorrect = allowedAnswers.some(option => {
+        const cleanOption = option.trim(); // Removes spaces around the answer config
+
+        // >>> RANGE CHECK LOGIC (Updated to use ':' for negative number compatibility)
+        if (cleanOption.includes(':')) {
+            const parts = cleanOption.split(':');
+            const min = parseFloat(parts[0]);
+            const max = parseFloat(parts[1]);
+            const userNum = parseFloat(val); // val is already trimmed
+
+            if (!isNaN(min) && !isNaN(max) && !isNaN(userNum)) {
+                return userNum >= min && userNum <= max;
+            }
+            return false;
+        } else {
+            // UPDATED: Added .trim() to 'val' matching to ignore accidental spaces from users
+            // Fallback to case-insensitive exact match for text passkeys or single values
+            return val.trim().toUpperCase() === cleanOption.toUpperCase();
         }
-    } else {
-        // Fallback to case-insensitive exact match for text passkeys or single values
-        isCorrect = (val.toUpperCase() === targetCode.toUpperCase());
-    }
+    });
 
     // 3. Process Evaluation Results
     //if(val === currentTask.code.toUpperCase()) {
