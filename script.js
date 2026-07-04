@@ -321,7 +321,8 @@ function openTask(id) {
         locationEl.style.display = 'none';  // Hide it completely if blank
     }
 
-    document.getElementById('modal-desc').innerText = currentTask.desc;
+    //document.getElementById('modal-desc').innerText = currentTask.desc;
+    document.getElementById('modal-desc').innerText = currentTask.desc.replace(/\\n/g, '\n');
     document.getElementById('modal-image').src = "images/" + currentTask.img;
     
     // 5. Reset photo button (Default state)
