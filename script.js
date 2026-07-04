@@ -42,6 +42,39 @@ if ('serviceWorker' in navigator) {
     //updateAssetStatus("READY");
 }
 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyiU54OPA3M1oCzC9YOmXCGyidOshK5cvrKm1eVbqnNKxAsTt2Kf834mFMYyPvP8YFCJw/exec";
+let allTasks = [];
+
+// Call this function when the app loads
+async function initializeRaceData() {
+    updateAssetStatus("SYNCING WITH GOOGLE SHEETS...");
+    
+    try {
+        // 1. Try to fetch fresh data from Google Sheets (Requires Internet)
+        const response = await fetch(GAS_API_URL);
+        allTasks = await response.json();
+        
+        // 2. Save it to local storage so we have it offline later
+        localStorage.setItem('race_tasks_backup', JSON.stringify(allTasks));
+        updateAssetStatus("READY (UPDATED)");
+        
+    } catch (error) {
+        console.warn("Offline! Falling back to cached data.", error);
+        // 3. If offline, pull the saved data from local storage
+        const cachedData = localStorage.getItem('race_tasks_backup');
+        
+        if (cachedData) {
+            allTasks = JSON.parse(cachedData);
+            updateAssetStatus("READY (OFFLINE MODE)");
+        } else {
+            updateAssetStatus("ERROR: NO DATA CACHED");
+        }
+    }
+    
+    // Now you can safely call your render function
+    //renderHub(); 
+}
+
 let db;
 let teamName = localStorage.getItem('teamName') || "";
 let startTime = localStorage.getItem('startTime') || null;
@@ -1031,6 +1064,9 @@ window.addEventListener('offline', checkNetworkStatus);
 checkNetworkStatus();
 
 window.addEventListener('load', () => {
+    // Trigger the sync on load
+    initializeRaceData();
+    
     const hasStarted = localStorage.getItem('race_started');
     const teamNameSaved = localStorage.getItem('teamName'); // Assuming you save team name
 
