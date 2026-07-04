@@ -47,32 +47,43 @@ let allTasks = [];
 
 // Call this function when the app loads
 async function initializeRaceData() {
-    updateAssetStatus("SYNCING WITH GOOGLE SHEETS...");
+    updateAssetStatus("SYNCING TASKS...");
     
     try {
-        // 1. Try to fetch fresh data from Google Sheets (Requires Internet)
+        // 1. Attempt to fetch fresh content from Google Sheets (Requires active connection)
         const response = await fetch(GAS_API_URL);
+        if (!response.ok) throw new Error("Network response failed");
+        
         allTasks = await response.json();
         
-        // 2. Save it to local storage so we have it offline later
-        localStorage.setItem('race_tasks_backup', JSON.stringify(allTasks));
-        updateAssetStatus("READY (UPDATED)");
+        // 2. Cache it inside LocalStorage as an emergency offline backup snapshot
+        localStorage.setItem('race_tasks_offline_backup', JSON.stringify(allTasks));
+        updateAssetStatus("READY (SYNCED)");
         
     } catch (error) {
-        console.warn("Offline! Falling back to cached data.", error);
-        // 3. If offline, pull the saved data from local storage
-        const cachedData = localStorage.getItem('race_tasks_backup');
+        console.warn("Device is offline or API timed out. Recovering local backup...", error);
         
+        // 3. Fall back to cached LocalStorage variables if internet access isn't available
+        const cachedData = localStorage.getItem('race_tasks_offline_backup');
         if (cachedData) {
             allTasks = JSON.parse(cachedData);
-            updateAssetStatus("READY (OFFLINE MODE)");
+            updateAssetStatus("READY (OFFLINE)");
         } else {
-            updateAssetStatus("ERROR: NO DATA CACHED");
+            updateAssetStatus("ERROR: NO TASKS CACHED");
+            alert("App couldn't connect online to complete first-time configuration setup!");
         }
     }
-    
-    // Now you can safely call your render function
-    //renderHub(); 
+
+    // 4. ROUTING: Now that allTasks is guaranteed to be populated, safely check the state
+    const hasStarted = localStorage.getItem('race_started');
+    const teamNameSaved = localStorage.getItem('teamName');
+
+    if (hasStarted === 'true' && teamNameSaved) {
+        renderHub(); // This will now successfully loop through allTasks!
+        console.log("Resuming session for:", teamNameSaved);
+    } else {
+        showWelcomeScreen();
+    }
 }
 
 let db;
@@ -1063,19 +1074,8 @@ window.addEventListener('offline', checkNetworkStatus);
 // Initial check
 checkNetworkStatus();
 
+// Trigger initial task population loop on application launch
 window.addEventListener('load', () => {
     // Trigger the sync on load
     initializeRaceData();
-    
-    const hasStarted = localStorage.getItem('race_started');
-    const teamNameSaved = localStorage.getItem('teamName'); // Assuming you save team name
-
-    if (hasStarted === 'true' && teamNameSaved) {
-        // Skip Welcome, go to Hub
-        renderHub();
-        console.log("Resuming session for:", teamNameSaved);
-    } else {
-        // First time visit, show Welcome
-        showWelcomeScreen();
-    }
 });
