@@ -1,4 +1,4 @@
-const CACHE_NAME = 'race-v15';
+const CACHE_NAME = 'race-v13';
 const ASSETS = [
   './',
   './index.html',
@@ -33,32 +33,53 @@ const ASSETS = [
   // ------------------------------------
 ];
 
+// 1. SAFE ALL-SETTLED ASYNC INSTALLATION
 self.addEventListener('install', e => {
     self.skipWaiting();
+    
     e.waitUntil(
-        caches.open(CACHE_NAME).then(c => {
-            console.log("Service Worker: Caching files...");
-
-            // Replace cache.addAll(ASSETS) with this:
-            ASSETS.map(async (url) => {
+        caches.open(CACHE_NAME).then(async (cache) => {
+            console.log("Service Worker: Caching assets sequentially...");
+            
+            // Map urls into an explicit array of individual fetch promises
+            const cachePromises = ASSETS.map(async (url) => {
                 try {
-                    const cache = await caches.open(CACHE_NAME);
                     await cache.add(url);
-                    console.log("Cached successfully:", url);
-                } catch (error) {
-                    console.error("❌ FAILED to cache:", url);
+                    console.log(`Cached successfully: ${url}`);
+                } catch (err) {
+                    console.error(`❌ FAILED to cache resource: ${url}`, err);
                 }
             });
+
+            // Forces e.waitUntil to wait until ALL promises resolve out completely
+            await Promise.allSettled(cachePromises);
+            console.log("Service Worker: Asset caching loop concluded.");
         })
     );
 });
 
+// 2. CLEAN UP OLD CACHE REFERENCES
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => {
-    if(k !== CACHE_NAME) return caches.delete(k);
-  }))));
+    e.waitUntil(
+        caches.keys().then(keys => Promise.all(
+            keys.map(k => {
+                if (k !== CACHE_NAME) {
+                    console.log(`Service Worker: Decomposing legacy cache structure: ${k}`);
+                    return caches.delete(k);
+                }
+            })
+        ))
+    );
 });
 
+// 3. OFFLINE FALLBACK NETWORK PROXY INTERCEPTOR
 self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+    e.respondWith(
+        caches.match(e.request).then(res => {
+            // Return cached resource, or fetch dynamically from web connection
+            return res || fetch(e.request).catch(() => {
+                console.warn(`Resource missing offline: ${e.request.url}`);
+            });
+        })
+    );
 });
