@@ -13,6 +13,10 @@ let lockoutTimerInterval;
 let timerInterval = null;
 let sessionStart = 0; // Tracks the moment a task modal is opened
 
+// >>> CRITICAL FIX: Define your missing API Endpoint URL variable <<<
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyiU54OPA3M1oCzC9YOmXCGyidOshK5cvrKm1eVbqnNKxAsTt2Kf834mFMYyPvP8YFCJw/exec";
+let allTasks = [];
+
 // --- DATABASE ---
 const req = indexedDB.open("RacePhotoLog", 1);
 
@@ -36,6 +40,7 @@ req.onupgradeneeded = e => {
 };
 
 // --- THE FIX: ADD THIS FOR THE INDICATOR ---
+// >>> FIX: Added optional chaining/guards so missing DOM nodes do not break execution <<<
 req.onsuccess = e => {
     db = e.target.result;
     console.log("IndexedDB: Photos Database Connected.");
@@ -795,20 +800,7 @@ function checkNetworkStatus() {
     }
 }
 
-function updateAssetStatus(status) {
-    const bar = document.getElementById('asset-status-bar');
-    if (!bar) return;
-
-    if (status === "READY") {
-        bar.innerText = "ASSETS: CACHED (OFFLINE)";
-        bar.style.background = "#27ae60"; // Green
-        runSystemCheck(); // Allow the race to start
-    } else {
-        bar.innerText = "ASSETS: CACHING...";
-        bar.style.background = "#f1c40f"; // Yellow
-    }
-}
-
+// >>> CLEANED STATUS HANDLERS (Removed conflicting legacy updateAssetStatus code strings) <<<
 // Keep track of both subsystems globally
 let swStatus = "LOADING";
 let dataStatus = "LOADING";
@@ -817,13 +809,11 @@ function updateCombinedStatus() {
     const bar = document.getElementById('asset-status-bar');
     if (!bar) return;
 
-    // Both systems must be in a 'READY' state to activate the start button
     if (swStatus.startsWith("READY") && dataStatus.startsWith("READY")) {
         bar.innerText = `ASSETS: CACHED | DATA: ${dataStatus.replace("READY ", "")}`;
         bar.style.background = "#27ae60"; // Green
         runSystemCheck();
     } else {
-        // Show what we are waiting for
         bar.innerText = `SW: ${swStatus} | DATA: ${dataStatus}`;
         bar.style.background = "#f1c40f"; // Yellow
         runSystemCheck();
@@ -832,17 +822,17 @@ function updateCombinedStatus() {
 
 function runSystemCheck() {
     const startBtn = document.getElementById('start-race-btn');
+    const checkMsg = document.getElementById('check-msg');
     if (!startBtn) return;
 
-    // Unlocks only if both systems have initialized successfully
     if (swStatus.startsWith("READY") && dataStatus.startsWith("READY")) {
         startBtn.disabled = false;
         startBtn.style.opacity = "1";
-        document.getElementById('check-msg').innerText = "SYSTEMS SECURE. READY FOR TEAM REGISTRATION.";
+        if (checkMsg) checkMsg.innerText = "SYSTEMS SECURE. READY FOR TEAM REGISTRATION.";
     } else {
         startBtn.disabled = true;
         startBtn.style.opacity = "0.5";
-        document.getElementById('check-msg').innerText = "INITIALIZING ARCHITECTURE CORE... PLEASE WAIT.";
+        if (checkMsg) checkMsg.innerText = "INITIALIZING ARCHITECTURE CORE... PLEASE WAIT.";
     }
 }
 
