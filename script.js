@@ -887,7 +887,7 @@ function checkNetworkStatus() {
 function updateAssetStatus(status) {
     const bar = document.getElementById('asset-status-bar');
     if (!bar) return;
-
+/*
     if (status === "READY") {
         bar.innerText = "ASSETS: CACHED (OFFLINE)";
         bar.style.background = "#27ae60"; // Green
@@ -896,6 +896,8 @@ function updateAssetStatus(status) {
         bar.innerText = "ASSETS: CACHING...";
         bar.style.background = "#f1c40f"; // Yellow
     }
+    */
+    console.log ("Asset status: " + status);
     bar.innerText = status;
 }
 
