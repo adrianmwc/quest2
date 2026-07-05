@@ -361,29 +361,51 @@ async function submitPasscode() {
     const val = document.getElementById('passcode-input').value.trim();
     const targetCode = currentTask.code.trim(); // Target passcode configuration string
 
-    // >>> MULTIPLE ANSWERS & RANGE CHECK LOGIC <<<
-    const allowedAnswers = targetCode.split('|');
+    let isCorrect = false;
 
-    let isCorrect = allowedAnswers.some(option => {
-        const cleanOption = option.trim(); // Removes spaces around the answer config
+    // =========================================================================
+    // >>> NEW ADDITION: DETECT CAPTION PREFIX TO BYPASS AND FORCE CLEAR <<<
+    // =========================================================================
+    if (rawInput.toUpperCase().startsWith("CAPTION:")) {
+        // Extract everything after the first 8 characters ("CAPTION:")
+        const captionText = rawInput.substring(8).trim();
+        
+        // Load existing captions map or make a new one
+        let savedCaptions = JSON.parse(localStorage.getItem('taskCaptions')) || {};
+        
+        // Save this caption under the current task's ID
+        savedCaptions[currentTask.id] = captionText;
+        localStorage.setItem('taskCaptions', JSON.stringify(savedCaptions));
+        
+        // Force evaluation to correct, allowing the user to clear the station
+        isCorrect = true;
+        console.log(`Caption registered for ${currentTask.id}: "${captionText}". Station bypassed/cleared.`);
+    } else {
+        // >>> EXISTING MULTIPLE ANSWERS & RANGE CHECK LOGIC <<<
+        const allowedAnswers = targetCode.split('|');
 
-        // >>> RANGE CHECK LOGIC (Updated to use ':' for negative number compatibility)
-        if (cleanOption.includes(':')) {
-            const parts = cleanOption.split(':');
-            const min = parseFloat(parts[0]);
-            const max = parseFloat(parts[1]);
-            const userNum = parseFloat(val); // val is already trimmed
+        isCorrect = allowedAnswers.some(option => {
+            const cleanOption = option.trim(); // Removes spaces around the answer config
 
-            if (!isNaN(min) && !isNaN(max) && !isNaN(userNum)) {
-                return userNum >= min && userNum <= max;
+            // >>> RANGE CHECK LOGIC (Updated to use ':' for negative number compatibility)
+            if (cleanOption.includes(':')) {
+                const parts = cleanOption.split(':');
+                const min = parseFloat(parts[0]);
+                const max = parseFloat(parts[1]);
+                const userNum = parseFloat(val); // val is already trimmed
+
+                if (!isNaN(min) && !isNaN(max) && !isNaN(userNum)) {
+                    return userNum >= min && userNum <= max;
+                }
+                return false;
+            } else {
+                // UPDATED: Added .trim() to 'val' matching to ignore accidental spaces from users
+                // Fallback to case-insensitive exact match for text passkeys or single values
+                return val.trim().toUpperCase() === cleanOption.toUpperCase();
             }
-            return false;
-        } else {
-            // UPDATED: Added .trim() to 'val' matching to ignore accidental spaces from users
-            // Fallback to case-insensitive exact match for text passkeys or single values
-            return val.trim().toUpperCase() === cleanOption.toUpperCase();
-        }
-    });
+        });
+    }
+    // =========================================================================
 
     // 3. Process Evaluation Results
     //if(val === currentTask.code.toUpperCase()) {
@@ -562,6 +584,8 @@ async function downloadPDF() {
     
     const safeTeamName = (teamName || "Team").replace(/\s+/g, '_');
 
+    const savedCaptions = JSON.parse(localStorage.getItem('taskCaptions')) || {};
+
     try {
         // --- 1. CALCULATE TOTALS ---
         let grandTotal = 0;
@@ -575,6 +599,13 @@ async function downloadPDF() {
                 totalHintPenalties += h;
                 totalErrorPenalties += e;
                 grandTotal += Math.max(0, t.pts - h - e);
+            }
+
+            // Check if a caption was typed for this task ID
+            if (savedCaptions[task.id]) {
+                console.log(`Task ${task.id} has caption text: ${savedCaptions[task.id]}`);
+                // Add text to your jsPDF doc instance here, e.g.:
+                // doc.text(`Caption: ${savedCaptions[task.id]}`, x, y);
             }
         });
 
@@ -666,6 +697,12 @@ async function downloadPDF() {
                 doc.setFont(undefined, 'italic');
                 doc.text("NO PHOTO EVIDENCE", 65, y + 15);
                 doc.setFont(undefined, 'normal');
+            }
+
+            if (savedCaptions[task.id]) {
+                console.log(`Task ${task.id} has caption text: ${savedCaptions[task.id]}`);
+                // Add text to your jsPDF doc instance here, e.g.:
+                doc.text(`Caption: ${savedCaptions[task.id]}`, 65, y + 20);
             }
 
             doc.setFont(undefined, 'normal');
