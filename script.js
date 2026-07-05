@@ -358,7 +358,8 @@ async function submitPasscode() {
     // 2. If photo exists, proceed with Passcode Check
     // old code, const val = document.getElementById('passcode-input').value.trim().toUpperCase();
     // 2. Prepare inputs for evaluation
-    const val = document.getElementById('passcode-input').value.trim();
+    const rawInput = document.getElementById('passcode-input').value.trim();
+    const val = rawInput;
     const targetCode = currentTask.code.trim(); // Target passcode configuration string
 
     let isCorrect = false;
