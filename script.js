@@ -600,13 +600,6 @@ async function downloadPDF() {
                 totalErrorPenalties += e;
                 grandTotal += Math.max(0, t.pts - h - e);
             }
-
-            // Check if a caption was typed for this task ID
-            if (savedCaptions[task.id]) {
-                console.log(`Task ${task.id} has caption text: ${savedCaptions[task.id]}`);
-                // Add text to your jsPDF doc instance here, e.g.:
-                // doc.text(`Caption: ${savedCaptions[task.id]}`, x, y);
-            }
         });
 
         // --- 2. HEADER ---
@@ -666,9 +659,9 @@ async function downloadPDF() {
             const e = (attempts[t.id] || 0) * RACE_CONFIG.errorPenalty;
             const score = isDone ? Math.max(0, t.pts - h - e) : 0;
 
-            // Updated Row Spacing: Increased to 60 to accommodate larger photos
+            // Updated Row Spacing: Increased to 68 to perfectly buffer images + custom subtitles
             doc.setDrawColor(220);
-            doc.line(15, y + 55, 195, y + 55); 
+            doc.line(15, y + 63, 195, y + 63);
 
             doc.setFontSize(10);
             doc.setFont(undefined, 'bold');
@@ -699,11 +692,16 @@ async function downloadPDF() {
                 doc.setFont(undefined, 'normal');
             }
 
-            if (savedCaptions[task.id]) {
-                console.log(`Task ${task.id} has caption text: ${savedCaptions[task.id]}`);
-                // Add text to your jsPDF doc instance here, e.g.:
-                doc.text(`Caption: ${savedCaptions[task.id]}`, 65, y + 20);
+            // =================================================================
+            // >>> FIXED CAPTION LAYOUT PLACEMENT AND SCOPING VARIABLE <<<
+            // =================================================================
+            if (savedCaptions[t.id]) { // Changed 'task.id' to 't.id'
+                doc.setFont(undefined, 'bold');
+                doc.setFontSize(9);
+                // Shifted down to y + 58 so it renders beneath the 52.5mm tall photo
+                doc.text(`Caption: ${savedCaptions[t.id]}`, 65, y + 58); 
             }
+            // =================================================================
 
             doc.setFont(undefined, 'normal');
             doc.setFontSize(9);
@@ -715,7 +713,8 @@ async function downloadPDF() {
             doc.text(`${score} points`, 175, y + 17);
             
             // Increase Y increment from 45 to 60 to account for larger image height
-            y += 60; 
+            // Incremented spacing variable from 60 to 68 to cleanly account for the new subtitle footprint
+            y += 68; 
             doc.setFont(undefined, 'normal');
             
             // Page break check (Lowered threshold to 220 because rows are taller)
