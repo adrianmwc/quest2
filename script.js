@@ -1,91 +1,3 @@
-// --- 1. PLACE IT HERE (TOP OF FILE) ---
-let refreshing = false;
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload(); 
-    });
-}
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-        
-        // 1. If there's an active controller and no pending updates, it's already READY
-        if (navigator.serviceWorker.controller && !reg.installing && !reg.waiting) {
-            updateAssetStatus("READY");
-        }
-
-        // 2. Handle updates or first-time installs
-        reg.addEventListener('updatefound', () => {
-            const worker = reg.installing;
-            updateAssetStatus("CACHING...");
-            
-            worker.addEventListener('statechange', () => {
-                // On iPad, 'activated' is the target, but we also check if it's controlling the page
-                if (worker.state === 'activated') {
-                    updateAssetStatus("READY");
-                    // Force a refresh of the storage stats UI
-                    //if (typeof getStorageStats === "function") getStorageStats();
-                }
-            });
-        });
-    });
-
-    // 3. Extra Safety: Listen for the controllerchange event
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        updateAssetStatus("READY");
-    });
-
-    //***to bypass for laptop testing
-    //***to comment out during production
-    //updateAssetStatus("READY");
-}
-
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyiU54OPA3M1oCzC9YOmXCGyidOshK5cvrKm1eVbqnNKxAsTt2Kf834mFMYyPvP8YFCJw/exec";
-let allTasks = [];
-
-// Call this function when the app loads
-async function initializeRaceData() {
-    updateAssetStatus("SYNCING TASKS...");
-    
-    try {
-        // 1. Attempt to fetch fresh content from Google Sheets (Requires active connection)
-        const response = await fetch(GAS_API_URL);
-        if (!response.ok) throw new Error("Network response failed");
-        
-        allTasks = await response.json();
-        
-        // 2. Cache it inside LocalStorage as an emergency offline backup snapshot
-        localStorage.setItem('race_tasks_offline_backup', JSON.stringify(allTasks));
-        updateAssetStatus("READY (SYNCED)");
-        
-    } catch (error) {
-        console.warn("Device is offline or API timed out. Recovering local backup...", error);
-        
-        // 3. Fall back to cached LocalStorage variables if internet access isn't available
-        const cachedData = localStorage.getItem('race_tasks_offline_backup');
-        if (cachedData) {
-            allTasks = JSON.parse(cachedData);
-            updateAssetStatus("READY (OFFLINE)");
-        } else {
-            updateAssetStatus("ERROR: NO TASKS CACHED");
-            alert("App couldn't connect online to complete first-time configuration setup!");
-        }
-    }
-
-    // 4. ROUTING: Now that allTasks is guaranteed to be populated, safely check the state
-    const hasStarted = localStorage.getItem('race_started');
-    const teamNameSaved = localStorage.getItem('teamName');
-
-    if (hasStarted === 'true' && teamNameSaved) {
-        renderHub(); // This will now successfully loop through allTasks!
-        console.log("Resuming session for:", teamNameSaved);
-    } else {
-        showWelcomeScreen();
-    }
-}
-
 let db;
 let teamName = localStorage.getItem('teamName') || "";
 let startTime = localStorage.getItem('startTime') || null;
@@ -321,8 +233,7 @@ function openTask(id) {
         locationEl.style.display = 'none';  // Hide it completely if blank
     }
 
-    //document.getElementById('modal-desc').innerText = currentTask.desc;
-    document.getElementById('modal-desc').innerText = currentTask.desc.replace(/\\n/g, '\n');
+    document.getElementById('modal-desc').innerText = currentTask.desc;
     document.getElementById('modal-image').src = "images/" + currentTask.img;
     
     // 5. Reset photo button (Default state)
@@ -887,7 +798,7 @@ function checkNetworkStatus() {
 function updateAssetStatus(status) {
     const bar = document.getElementById('asset-status-bar');
     if (!bar) return;
-/*
+
     if (status === "READY") {
         bar.innerText = "ASSETS: CACHED (OFFLINE)";
         bar.style.background = "#27ae60"; // Green
@@ -896,22 +807,111 @@ function updateAssetStatus(status) {
         bar.innerText = "ASSETS: CACHING...";
         bar.style.background = "#f1c40f"; // Yellow
     }
-    */
-    console.log ("Asset status: " + status);
-    bar.innerText = status;
+}
+
+// Keep track of both subsystems globally
+let swStatus = "LOADING";
+let dataStatus = "LOADING";
+
+function updateCombinedStatus() {
+    const bar = document.getElementById('asset-status-bar');
+    if (!bar) return;
+
+    // Both systems must be in a 'READY' state to activate the start button
+    if (swStatus.startsWith("READY") && dataStatus.startsWith("READY")) {
+        bar.innerText = `ASSETS: CACHED | DATA: ${dataStatus.replace("READY ", "")}`;
+        bar.style.background = "#27ae60"; // Green
+        runSystemCheck();
+    } else {
+        // Show what we are waiting for
+        bar.innerText = `SW: ${swStatus} | DATA: ${dataStatus}`;
+        bar.style.background = "#f1c40f"; // Yellow
+        runSystemCheck();
+    }
 }
 
 function runSystemCheck() {
-    const assetsReady = document.getElementById('asset-status-bar')?.innerText.includes("CACHED");
     const startBtn = document.getElementById('start-race-btn');
-    
-    if (assetsReady) {
+    if (!startBtn) return;
+
+    // Unlocks only if both systems have initialized successfully
+    if (swStatus.startsWith("READY") && dataStatus.startsWith("READY")) {
         startBtn.disabled = false;
         startBtn.style.opacity = "1";
         document.getElementById('check-msg').innerText = "SYSTEMS SECURE. READY FOR TEAM REGISTRATION.";
     } else {
-        startBtn.disabled = true;           //commented for testing 
+        startBtn.disabled = true;
         startBtn.style.opacity = "0.5";
+        document.getElementById('check-msg').innerText = "INITIALIZING ARCHITECTURE CORE... PLEASE WAIT.";
+    }
+}
+
+async function initializeRaceData() {
+    dataStatus = "SYNCING...";
+    updateCombinedStatus();
+    
+    try {
+        const response = await fetch(GAS_API_URL);
+        if (!response.ok) throw new Error("Network response failed");
+        
+        allTasks = await response.json();
+        localStorage.setItem('race_tasks_offline_backup', JSON.stringify(allTasks));
+        
+        dataStatus = "READY (ONLINE)"; // Mark data layer ready
+    } catch (error) {
+        const cachedData = localStorage.getItem('race_tasks_offline_backup');
+        if (cachedData) {
+            allTasks = JSON.parse(cachedData);
+            dataStatus = "READY (OFFLINE)"; // Mark data layer ready via fallback array
+        } else {
+            dataStatus = "ERROR (NO CACHE)";
+        }
+    }
+    
+    updateCombinedStatus();
+
+    // Routine routing rules continue below...
+    const hasStarted = localStorage.getItem('race_started');
+    const teamNameSaved = localStorage.getItem('teamName');
+    if (hasStarted === 'true' && teamNameSaved) {
+        renderHub();
+    } else {
+        showWelcomeScreen();
+    }
+}
+
+function initializeServiceWorker() {
+    let refreshing = false;
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload(); 
+        });
+
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            if (navigator.serviceWorker.controller && !reg.installing && !reg.waiting) {
+                swStatus = "READY";
+                updateCombinedStatus();
+            }
+
+            reg.addEventListener('updatefound', () => {
+                const worker = reg.installing;
+                swStatus = "CACHING...";
+                updateCombinedStatus();
+                
+                worker.addEventListener('statechange', () => {
+                    if (worker.state === 'activated') {
+                        swStatus = "READY";
+                        updateCombinedStatus();
+                    }
+                });
+            });
+        });
+    } else {
+        // If the browser doesn't support Service Workers (like older testing browsers)
+        swStatus = "READY (NOT SUPPORTED)";
+        updateCombinedStatus();
     }
 }
 
@@ -1072,14 +1072,16 @@ function revealAdminTools() {
     document.getElementById('storage-toggle-btn').style.display = 'block';
 }
 
-// Check every time the connection changes
+// Monitor connection states
 window.addEventListener('online', checkNetworkStatus);
 window.addEventListener('offline', checkNetworkStatus);
-// Initial check
 checkNetworkStatus();
 
-// Trigger initial task population loop on application launch
+// The single Point of Truth for launching the app
 window.addEventListener('load', () => {
-    // Trigger the sync on load
-    initializeRaceData();
+    // 1. Start checking/registering the local cache assets
+    initializeServiceWorker(); 
+    
+    // 2. Fetch data rows from Google Sheets AND route the user to the correct screen
+    initializeRaceData(); 
 });
