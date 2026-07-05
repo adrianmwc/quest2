@@ -896,6 +896,7 @@ function updateAssetStatus(status) {
         bar.innerText = "ASSETS: CACHING...";
         bar.style.background = "#f1c40f"; // Yellow
     }
+    bar.innerText = status;
 }
 
 function runSystemCheck() {
