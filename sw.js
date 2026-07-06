@@ -4,7 +4,7 @@ const ASSETS = [
   './index.html',
   './style.css',
   './script.js',
-  './tasks.js',
+  //'./tasks.js', read from googlesheet
   './config.js',
   './manifest.json',
   './jspdf.umd.min.js',
