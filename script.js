@@ -352,24 +352,24 @@ async function submitPasscode() {
     const targetCode = currentTask.code.trim(); // Target passcode configuration string
 
     let isCorrect = false;
+ 
+    // =========================================================================
+    // >>> NEW LOGIC: IF STATION CONFIG IS 'CAPTION', ALLOW FREE TEXT OVERRIDE <<<
+    // =========================================================================
+    if (targetCode.toUpperCase() === "CAPTION") {
+        // Any text entered is treated as the caption description
+        const captionText = rawInput;
 
-    // =========================================================================
-    // >>> NEW ADDITION: DETECT CAPTION PREFIX TO BYPASS AND FORCE CLEAR <<<
-    // =========================================================================
-    if (rawInput.toUpperCase().startsWith("CAPTION:")) {
-        // Extract everything after the first 8 characters ("CAPTION:")
-        const captionText = rawInput.substring(8).trim();
-        
         // Load existing captions map or make a new one
         let savedCaptions = JSON.parse(localStorage.getItem('taskCaptions')) || {};
         
-        // Save this caption under the current task's ID
-        savedCaptions[currentTask.id] = captionText;
+        // Save this caption text under the current task's ID (falls back to placeholder if empty)
+        savedCaptions[currentTask.id] = captionText || "Station cleared via free-text entry.";
         localStorage.setItem('taskCaptions', JSON.stringify(savedCaptions));
-        
-        // Force evaluation to correct, allowing the user to clear the station
+
+        // Always pass verification, clearing the station instantly
         isCorrect = true;
-        console.log(`Caption registered for ${currentTask.id}: "${captionText}". Station bypassed/cleared.`);
+        console.log(`Free text caption recorded for ${currentTask.id}: "${captionText}". Station cleared.`);
     } else {
         // >>> EXISTING MULTIPLE ANSWERS & RANGE CHECK LOGIC <<<
         const allowedAnswers = targetCode.split('|');
