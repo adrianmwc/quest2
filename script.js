@@ -958,11 +958,15 @@ async function getStorageStats() {
     }
     document.getElementById('size-local').innerText = (localTotal / 1024).toFixed(2) + " KB";
 
-    // 2. Calculate Cache Storage Size (Header-only Method)
+    // 2. Calculate Cache Storage Size (Task Array Cross-Reference Method)
     if ('caches' in window) {
         try {
             const cacheNames = await caches.keys();
             let cacheTotal = 0;
+            let cachedTasksCount = 0; // Counter for valid cached tasks
+
+            // Track which unique tasks from your global array are fully cached
+            const verifiedCachedTaskIds = new Set();
 
             for (const name of cacheNames) {
                 const cache = await caches.open(name);
@@ -971,23 +975,36 @@ async function getStorageStats() {
                 for (const request of requests) {
                     const response = await cache.match(request);
                     if (response) {
-                        // Try to get size from headers first (Fast & Memory-efficient)
+                        // Calculate sizes using standard headers/blob fallbacks
                         const contentLength = response.headers.get('content-length');
-                        
                         if (contentLength) {
                             cacheTotal += parseInt(contentLength, 10);
                         } else {
-                            // Fallback: Only use blob if header is missing
-                            // This usually happens with 'opaque' cross-domain requests
                             const blob = await response.blob();
                             cacheTotal += blob.size;
+                        }
+
+                        // CROSS-REFERENCE LOGIC: Check if the cache URL matches any task in allTasks
+                        if (Array.isArray(allTasks)) {
+                            allTasks.forEach(task => {
+                                // Match if the asset name matches the task ID (e.g., "01-fountain.jpg" matches ID "1")
+                                // Pad the ID if needed (e.g., task.id is "1", look for "01")
+                                const paddedId = String(task.id).padStart(2, '0');
+                                
+                                if (request.url.includes(`/${paddedId}-`)) {
+                                    verifiedCachedTaskIds.add(task.id);
+                                }
+                            });
                         }
                     }
                 }
             }
             
             const mbSize = (cacheTotal / (1024 * 1024)).toFixed(2);
-            document.getElementById('size-cache').innerText = mbSize + " MB";
+            cachedTasksCount = verifiedCachedTaskIds.size;
+            
+            // UI Print Line: Outputs exact stats relative to your task configuration rules
+            document.getElementById('size-cache').innerText = `${mbSize} MB (${cachedTasksCount}/${allTasks.length || 0} Stations Offline)`;
             
         } catch (err) {
             console.error("Cache calculation failed:", err);
