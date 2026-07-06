@@ -346,32 +346,32 @@ async function submitPasscode() {
 
     // 2. If photo exists, proceed with Passcode Check
     // old code, const val = document.getElementById('passcode-input').value.trim().toUpperCase();
-    // 2. Prepare inputs for evaluation
+// 2. Prepare inputs for evaluation
     const rawInput = document.getElementById('passcode-input').value.trim();
     const val = rawInput;
     const targetCode = currentTask.code.trim(); // Target passcode configuration string
 
     let isCorrect = false;
- 
+
     // =========================================================================
     // >>> NEW LOGIC: IF STATION CONFIG IS 'CAPTION', ALLOW FREE TEXT OVERRIDE <<<
     // =========================================================================
     if (targetCode.toUpperCase() === "CAPTION") {
         // Any text entered is treated as the caption description
-        const captionText = rawInput;
-
+        const captionText = rawInput; 
+        
         // Load existing captions map or make a new one
         let savedCaptions = JSON.parse(localStorage.getItem('taskCaptions')) || {};
         
         // Save this caption text under the current task's ID (falls back to placeholder if empty)
         savedCaptions[currentTask.id] = captionText || "Station cleared via free-text entry.";
         localStorage.setItem('taskCaptions', JSON.stringify(savedCaptions));
-
+        
         // Always pass verification, clearing the station instantly
         isCorrect = true;
         console.log(`Free text caption recorded for ${currentTask.id}: "${captionText}". Station cleared.`);
     } else {
-        // >>> EXISTING MULTIPLE ANSWERS & RANGE CHECK LOGIC <<<
+        // >>> EXISTING MULTIPLE ANSWERS & RANGE CHECK LOGIC FOR STANDARD PASSCODES <<<
         const allowedAnswers = targetCode.split('|');
 
         isCorrect = allowedAnswers.some(option => {
@@ -389,7 +389,6 @@ async function submitPasscode() {
                 }
                 return false;
             } else {
-                // UPDATED: Added .trim() to 'val' matching to ignore accidental spaces from users
                 // Fallback to case-insensitive exact match for text passkeys or single values
                 return val.trim().toUpperCase() === cleanOption.toUpperCase();
             }
