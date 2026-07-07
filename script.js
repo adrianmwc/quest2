@@ -192,26 +192,6 @@ function renderHub() {
     document.getElementById('progress-bar').innerText = p + "%";
     
     if (completedTasks.length === allTasks.length) document.getElementById('finish-btn').style.display = 'block';
-
-// =========================================================================
-    // >>> RULES DASHBOARD PANEL INJECTION <<<
-    // =========================================================================
-    const rulesContainer = document.getElementById('hub-rules-container');
-    if (rulesContainer) {
-        // Convert the lockout configuration milliseconds to readable whole minutes
-        const lockoutMinutes = Math.round((RACE_CONFIG.lockoutBaseTime || 60000) / 60000);
-        
-        rulesContainer.innerHTML = `
-            <div class="hub-rules-grid">
-                <div class="rule-pill">💡 Hint Penalty: <span>-${RACE_CONFIG.hintPenalty || 0} pts</span></div>
-                <div class="rule-pill">❌ Guess Penalty: <span>-${RACE_CONFIG.errorPenalty || 0} pts</span></div>
-                <div class="rule-pill">🔒 Safe Buffer: <span>${RACE_CONFIG.maxAttemptsBeforeLock || 3} Tries</span></div>
-                <div class="rule-pill">⏳ Lockout Duration: <span>${lockoutMinutes} min</span></div>
-            </div>
-        `;
-    }
-    // =========================================================================
-    
     startGlobalTimer();
 }
 
