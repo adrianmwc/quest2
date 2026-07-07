@@ -193,7 +193,7 @@ function renderHub() {
     
     if (completedTasks.length === allTasks.length) document.getElementById('finish-btn').style.display = 'block';
 
-    // =========================================================================
+// =========================================================================
     // >>> RULES DASHBOARD PANEL INJECTION <<<
     // =========================================================================
     const rulesContainer = document.getElementById('hub-rules-container');
