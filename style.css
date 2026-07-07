@@ -593,3 +593,43 @@ button.photo-upload-btn.has-photo {
     background: #2ecc71;
     color: #1a1a1a; /* Dark text for contrast against green */
 }
+
+/*rule grid START */
+/* Rules Dashboard Grid Layout */
+.hub-rules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 12px auto;
+    max-width: 450px;
+    padding: 0 10px;
+}
+
+/* Individual Config Pills */
+.rule-pill {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    text-align: left;
+    color: #b3b3b3;
+    font-weight: 500;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Value Highlights inside the pills */
+.rule-pill span {
+    font-weight: bold;
+    color: #f1c40f; /* Warm Yellow highlight */
+    margin-left: 4px;
+}
+
+/* Ensure score badge separates nicely */
+.hub-score-badge {
+    margin-top: 15px;
+}
+/*rule grid END */
