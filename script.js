@@ -1002,8 +1002,8 @@ function initializeServiceWorker() {
 
     //BYPASS code for local testing
     //comment out for production
-    //swStatus = "READY";
-    //updateCombinedStatus();
+    swStatus = "READY";
+    updateCombinedStatus();
 }
 
 // Function to enlarge the image
@@ -1060,6 +1060,9 @@ async function getStorageStats() {
                             cacheTotal += blob.size;
                         }
 
+                        cachedTasksCount++;
+
+                        /*
                         // CROSS-REFERENCE LOGIC: Check if the cache URL matches any task in allTasks
                         if (Array.isArray(allTasks)) {
                             allTasks.forEach(task => {
@@ -1072,12 +1075,13 @@ async function getStorageStats() {
                                 }
                             });
                         }
+                        */
                     }
                 }
             }
             
             const mbSize = (cacheTotal / (1024 * 1024)).toFixed(2);
-            cachedTasksCount = verifiedCachedTaskIds.size;
+            //cachedTasksCount = verifiedCachedTaskIds.size;
             
             // UI Print Line: Outputs exact stats relative to your task configuration rules
             document.getElementById('size-cache').innerText = `${mbSize} MB (${cachedTasksCount}/${allTasks.length || 0} Stations Offline)`;
