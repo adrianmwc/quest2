@@ -1002,8 +1002,8 @@ function initializeServiceWorker() {
 
     //BYPASS code for local testing
     //comment out for production
-    swStatus = "READY";
-    updateCombinedStatus();
+    //swStatus = "READY";
+    //updateCombinedStatus();
 }
 
 // Function to enlarge the image
