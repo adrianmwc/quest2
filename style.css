@@ -633,3 +633,42 @@ button.photo-upload-btn.has-photo {
     margin-top: 15px;
 }
 /*rule grid END */
+
+/* Briefing Story Content wrapper block START */
+.brief-container {
+    background: rgba(20, 24, 33, 0.85);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px auto;
+    max-width: 600px;
+    text-align: left;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.brief-container h3 {
+    color: #3498db;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+    padding-bottom: 8px;
+}
+
+.brief-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #e0e6ed;
+    margin-bottom: 14px;
+}
+
+/* Call-to-action color emphasis highlighting */
+.brief-container .font-highlight {
+    color: #f1c40f;
+    font-weight: 500;
+    border-left: 3px solid #f1c40f;
+    padding-left: 12px;
+    margin-top: 20px;
+}
+/* Briefing Story Content wrapper block END */

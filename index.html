@@ -36,8 +36,33 @@
             <p id="check-msg">SYSTEM INITIALIZING...</p>
         </div>
 
-        <button id="start-race-btn" onclick="preRaceCheck()" class="btn-main">START RACE</button>
+        <button id="briefing-gate-btn" onclick="goToBriefing()" style="display:none;" class="btn-main">PROCEED TO MISSION BRIEF</button>
         <div id="preloader" style="display:none;"></div>
+    </div>
+
+    <div id="brief-screen" class="screen">
+        <div class="hub-header-panel">
+            <h2 id="brief-team-name">TEAM: -</h2>
+            <div id="brief-team-members" class="member-pills-container"></div>
+        </div>
+
+        <div class="brief-container">
+            <h3>🚀 MISSION BRIEFING</h3>
+            <p class="brief-text">
+                In an alternative storyline, the Sun is dying and there is an urgent need for new renewable sources of energy to be established. 
+            </p>
+            <p class="brief-text">
+                The agency is looking for possible teams to take part in the discovery team. A selection test is conducted at the Our Tampines Hub, where current sustainability practices are put in place. 
+            </p>
+            <p class="brief-text font-highlight">
+                To pass the test, you and your team members will need to demonstrate the various skills, knowledge, and aptitude to show that you can be part of the pioneering team to discover and establish a new form of renewable energy when the Sun extinguishes.
+            </p>
+        </div>
+
+        <div style="padding: 0 20px; max-width: 400px; margin: 0 auto;">
+            <button id="start-race-btn" onclick="verifyBriefingAccess()" class="btn-main" style="width: 100%;">ENGAGE HYPERDRIVE & START</button>
+            <button type="button" onclick="backToRegistration()" class="btn-hint" style="width: 100%; margin-top: 10px;">⬅ BACK TO REGISTRATION</button>
+        </div>
     </div>
 
     <div id="hub-screen" class="screen">
@@ -56,6 +81,7 @@
         </div>
         
         <div id="hub-score" style="font-size: 1.2rem; color: var(--gold); font-weight: bold;">Score: 0</div>
+        <button class="btn-main" style="background:#3498db; width: 100%;" onclick="downloadPDF()">📥 DOWNLOAD OFFICIAL PDF</button>
         <button id="finish-btn" class="btn-finish-pulse" onclick="showPitStop()">🏁 REACH THE PIT STOP</button>
         <br>
         <div id="task-list"></div>

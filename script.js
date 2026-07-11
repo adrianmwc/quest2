@@ -71,44 +71,74 @@ function generateMemberInputs() {
     }
 }
 
-function preRaceCheck() {
-    //1. Check input for team name, members name
-    //1a. Check Team Name
-    const teamName = document.getElementById('team-name-input').value.trim();
-    if (!teamName) {
+// =========================================================================
+// STEP 1: VALIDATE REGISTRATION AND REDIRECT TO MISSION BRIEFING SCREEN
+// =========================================================================
+function goToBriefing() {
+    // 1. Check Team Name input field value
+    const teamNameInput = document.getElementById('team-name-input').value.trim();
+    if (!teamNameInput) {
         alert("⚠️ MISSION ERROR: Team Name is required.");
         return;
     }
 
-    //1b. Check if a number of racers was selected
+    // 2. Check if a valid number of racers was chosen
     const count = parseInt(document.getElementById('member-count').value);
-    if (count === 0) {
+    if (count === 0 || isNaN(count)) {
         alert("⚠️ MISSION ERROR: Please select the number of racers.");
         return;
     }
 
-    // 2a. Map the entries (Your existing code)
+    // 3. Map input rows using your exact querySelector parsing structure
     const memberEntries = document.querySelectorAll('#member-inputs-container > div');
     teamMembers = Array.from(memberEntries).map(entry => ({
-        name: entry.querySelector('.input-name').value.trim(),
-        class: entry.querySelector('.input-class').value.trim()
+        name: entry.querySelector('.input-name')?.value.trim() || "",
+        class: entry.querySelector('.input-class')?.value.trim() || ""
     }));
 
-    // 2b. CHECK: Is any name or class blank?
+    // 4. Run safety blank checks (.some)
     const hasIncompleteEntry = teamMembers.some(m => m.name === "" || m.class === "");
-
-    if (hasIncompleteEntry) {
+    if (hasIncompleteEntry || teamMembers.length !== count) {
         alert("⚠️ MISSION DENIED: All racer names and classes must be filled out.");
-        return; // Exit the function so the Access Code prompt doesn't show
+        return; 
     }
 
-    // 3. Success! Now proceed to Access Code
-    const accessCode = prompt("ENTER MISSION ACCESS CODE:");
+    // Save temporary state globally so it can be committed on final launch
+    teamName = teamNameInput;
+
+    // 5. Inject layout details to the top of the Briefing Screen menu header
+    document.getElementById('brief-team-name').innerText = `TEAM: ${teamName.toUpperCase()}`;
+    
+    const briefMemDiv = document.getElementById('brief-team-members');
+    briefMemDiv.innerHTML = "";
+    teamMembers.forEach(m => {
+        briefMemDiv.innerHTML += `<div class="member-pill">${m.name} <span>${m.class}</span></div>`;
+    });
+
+    // 6. Navigate to Briefing Screen
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('brief-screen').classList.add('active');
+}
+
+// =========================================================================
+// STEP 2: GATEKEEPER CHECK AT BRIEFING SCREEN BEFORE LAUNCHING CORE RACE
+// =========================================================================
+function verifyBriefingAccess() {
+    const accessCode = prompt("ENTER MISSION ACCESS CODE TO DEPLOY:");
+    
     if (accessCode === RACE_CONFIG.accessCode) {
+        // Code is correct! Initialize timer tracking and unlock dashboard menu maps
         startRace();
-    } else if (accessCode !== null) { // Don't alert if they hit 'Cancel'
-        alert("ACCESS DENIED: Invalid Mission Code.");
+    } else if (accessCode !== null) { 
+        // User didn't click cancel, but entered an invalid value
+        alert("🔒 ACCESS DENIED: Invalid Mission Access Code.");
     }
+}
+
+// Navigates backwards from the Briefing screen to the Welcome/Registration screen
+function backToRegistration() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('welcome-screen').classList.add('active');
 }
 
 function startRace() {
@@ -192,6 +222,7 @@ function renderHub() {
     document.getElementById('progress-bar').innerText = p + "%";
     
     if (completedTasks.length === allTasks.length) document.getElementById('finish-btn').style.display = 'block';
+
     // =========================================================================
     // >>> RULES DASHBOARD PANEL INJECTION <<<
     // =========================================================================
@@ -486,6 +517,19 @@ function closeModal() {
 }
 
 async function showPitStop() {
+
+    const stopCode = prompt("ENTER MISSION COMPLETE CODE:");
+    
+    if (stopCode === RACE_CONFIG.stopCode) {
+        // Code is correct! continue to Pit Stop
+    } else if (stopCode !== null) { 
+        // User didn't click cancel, but entered an invalid value
+        alert("🔒 ACCESS DENIED: Invalid Mission COMPLETE Code.");
+        return;
+    } else if (stopCode === null) { 
+        return;
+    }
+
     // 1. Stop all timers
     
     // --- THE FIX: STOP THE CLOCK ---
@@ -865,17 +909,25 @@ function updateCombinedStatus() {
 }
 
 function runSystemCheck() {
-    const startBtn = document.getElementById('start-race-btn');
+    const startBtn = document.getElementById('briefing-gate-btn');
     const checkMsg = document.getElementById('check-msg');
     if (!startBtn) return;
 
     if (swStatus.startsWith("READY") && dataStatus.startsWith("READY")) {
+        // 1. Force the element layout layer to be rendered on screen
+        startBtn.style.display = 'block'; 
+        
+        // 2. Adjust standard state modifiers
         startBtn.disabled = false;
         startBtn.style.opacity = "1";
+        
         if (checkMsg) checkMsg.innerText = "SYSTEMS SECURE. READY FOR TEAM REGISTRATION.";
     } else {
+        // Keep hidden until both architectures yield a READY string state
+        startBtn.style.display = 'none';
         startBtn.disabled = true;
         startBtn.style.opacity = "0.5";
+        
         if (checkMsg) checkMsg.innerText = "INITIALIZING ARCHITECTURE CORE... PLEASE WAIT.";
     }
 }
@@ -947,6 +999,11 @@ function initializeServiceWorker() {
         swStatus = "READY (NOT SUPPORTED)";
         updateCombinedStatus();
     }
+
+    //BYPASS code for local testing
+    //comment out for production
+    //swStatus = "READY";
+    //updateCombinedStatus();
 }
 
 // Function to enlarge the image

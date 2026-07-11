@@ -7,6 +7,7 @@ const RACE_CONFIG = {
     errorPenalty: 10,           // Points deducted for EVERY wrong guess
     
     accessCode: "1234",               //access code to start the race
+    stopCode: "5678",               //access code to stop the race
 
     // LOCKOUT SETTINGS
     maxAttemptsBeforeLock: 3,   // Number of wrong guesses before they get locked out
@@ -18,8 +19,8 @@ const RACE_CONFIG = {
 //maps the categories to specific colors.
 const CATEGORY_COLORS = {
     "Trial of Strength": "#e74c3c",   // Red
-    "Trial of Adaptability": "#3498db",     // Blue
-    "Trial of Knowledge": "#f1c40f",   // Yellow
+    "Trial of Knowledge": "#3498db",     // Blue
+    "Trial of Adaptability": "#f1c40f",   // Yellow
     "Trial of Choice": "#9b59b6",    // Purple
     "Default": "#2ecc71"     // Green (fallback if empty or unmatched)
 };
